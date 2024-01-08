@@ -1,0 +1,41 @@
+.topBanner {
+    color: #25c2a0;
+    background-color: #252526;
+    height: var(--height);
+    border-top-right-radius: calc(var(--height) * 0.5);
+    border-bottom-right-radius: calc(var(--height) * 0.5);
+    box-shadow: 4px 8px 12px 4px #6e9486;
+  }
+
+header {
+    display: none;
+}
+
+.container {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "everything everything everything"
+    "everything everything everything"
+    ". . .";
+}
+
+.everything {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "banner banner logo"
+    "banner banner logo"
+    "revision revision logo";
+  grid-area: everything;
+}
+
+.logo { grid-area: logo; }
+
+.banner { grid-area: banner; }
+
+.revision { grid-area: revision; }

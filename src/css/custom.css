@@ -1,0 +1,142 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+html[data-theme='dark'] {
+    color: #25c2a0;
+  --ifm-background-color: #1a171d;
+  --ifm-background-surface-color: #201b23;
+  --ifm-menu-color-background-active: #201b23;
+  --ifm-color-emphasis-200: #2e2731;
+  --ifm-color-emphasis-1000: #29d5b0;
+  --prism-background-color: #201b23;
+  --docusaurus-highlighted-code-line-bg: #0b3028;
+}
+:root {
+  --ifm-color-primary: #2e8555;
+  --ifm-color-primary-dark: #29784c;
+  --ifm-color-primary-darker: #277148;
+  --ifm-color-primary-darkest: #205d3b;
+  --ifm-color-primary-light: #33925d;
+  --ifm-color-primary-lighter: #359962;
+  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-code-font-size: 95%;
+  --ifm-global-radius: 12px;
+  --prism-background-color: #201b23;
+  --docusaurus-highlighted-code-line-bg: #0b3028;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  /* --ifm-background-color: #1c1b1d; */
+  /* --ifm-background-surface-color: #252429; */
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --prism-background-color: #201b23;
+  --docusaurus-highlighted-code-line-bg: #0b3028;
+}
+
+.logo { 
+  width: 148px;
+  height: 148px;
+  float: inline-end;
+}
+
+.hidden {
+  display: none;
+}
+
+code[class*="language-"], pre[class*="language-"] {
+  white-space: pre-line !important;
+}
+
+.theme-code-block {
+  border-top-left-radius: 80px !important;
+  border-top-right-radius: 80px !important;
+  overflow-x: clip;
+}
+
+.prism-code {
+  border-top-right-radius: 80px !important;
+  border-bottom-right-radius: 80px !important;
+  padding-left: unset;
+}
+
+.content-block {
+  color: #1a8870;
+  background-color: #1a171d;
+  height: auto;
+  height: var(--height);
+  padding: 12;
+  border-radius: 8px;
+  border-top-right-radius: calc(var(--height) * 0.5);
+  border-bottom-right-radius: calc(var(--height) * 0.5);
+  box-shadow: 10px 10px 12px #0b5645;
+}
+
+.footer {
+  background-color: #1a171d;
+  color: #25c2a0;
+}
+
+.MuiTimelineConnector-root {
+  background-color: #0b5645 !important;
+}
+
+.MuiPaper-root {
+  height: auto;
+  height: var(--height);
+  border-radius: 8px;
+  border-top-right-radius: calc(var(--height) * 0.5);
+  border-bottom-right-radius: calc(var(--height) * 0.5);
+}
+
+
+.browserWindow_my1Q {
+  border: 3px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-global-radius);
+  box-shadow: var(--ifm-global-shadow-lw);
+  margin-bottom: var(--ifm-leading)
+}
+
+.browserWindowHeader_jXSR {
+  align-items: center;
+  background: var(--ifm-color-emphasis-200);
+  display: flex;
+  padding: .5rem 1rem
+}
+
+.browserWindowAddressBar_Pd8y {
+  background-color: var(--ifm-background-color);
+  border-radius: 12.5px;
+  color: var(--ifm-color-gray-800);
+  flex: 1 0;
+  font: 400 13px Arial, sans-serif;
+  margin: 0 1rem 0 .5rem;
+  padding: 5px 15px;
+  -webkit-user-select: none;
+  user-select: none
+}
+
+.browserWindowBody_Idgs>:last-child {
+  margin-bottom: 0
+}
+
+.browserWindowMenuIcon_Vhuh {
+  margin-left: auto
+}
+
+.browserWindowBody_Idgs {
+  background-color: var(--ifm-background-color);
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  padding: 1rem
+}
