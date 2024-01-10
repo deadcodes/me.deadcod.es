@@ -44,6 +44,7 @@ const config: Config = {
           },
         },
         blog: {
+          routeBasePath: '/guides',
           showReadingTime: true,
         },
         theme: {
@@ -84,7 +85,7 @@ const config: Config = {
           position: 'left',
           label: 'Scripts',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        {to: '/guides', label: 'Guides', position: 'left'},
         {
           href: 'https://github.com/deadcodes/MEScripts',
           label: 'GitHub',

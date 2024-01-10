@@ -36,7 +36,7 @@ IM THE CONTENT
 
 <ContentBlock title="Code">
 
-```js showLineNumbers title="cookies"
+```js showLineNumbers
 local API = require("api")
 local UTILS = require("utils")
 
@@ -237,7 +237,6 @@ local function FindHl(objects, maxdistance, highlight)
     end
     return shiny
 end
-
 local function followTimeSprite(objects)
     local targets = API.FindObject_string(objects, 60)
     local targetIds = {}
