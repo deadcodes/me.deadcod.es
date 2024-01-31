@@ -7,11 +7,12 @@
 }
 
 .codeBlockTitle {
+  font-family: revert !important;
   color: var(--ifm-color-primary-darkest);
   border-bottom: 1px solid var(--ifm-color-primary-darkest);
   background-color: var(--ifm-background-surface-color);
   font-size: var(--ifm-code-font-size);
-  font-weight: 500;
+  font-weight: 280 !important;
   padding: 0.75rem var(--ifm-pre-padding);
   border-top-left-radius: 80px;
   border-top-right-radius: 80px;

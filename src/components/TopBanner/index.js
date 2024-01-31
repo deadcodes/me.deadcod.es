@@ -12,6 +12,7 @@ export default function TopBanner(props) {
   }, []);
 
   const maxRadius = 80;
+  const image = props.skill;
   const radiusToSet = height > maxRadius ? maxRadius : height * 0.5;
   const stylesObj = {
     color: "#1a8870",
@@ -32,10 +33,11 @@ export default function TopBanner(props) {
         <div className="everything">
           <div className="logo">
             {" "}
+            {image !== undefined &&
             <img
-              src={require("@site/static/img/logo-min.png").default}
+              src={require(`@site/static/img/${image}.png`).default}
               className="logo"
-            />
+            />}
           </div>
           <div className="banner">
             <h1

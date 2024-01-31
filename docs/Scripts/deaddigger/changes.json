@@ -1,14 +1,32 @@
 [
     {
-        "date":"2024-01-01",
-        "title":"Major change",
-        "importance":"primary",
-        "items":["While included here as a standalone component, the most common use will be in some form of input, so some of the behavior demonstrated here is not shown in context.","milk","cookies"]
+        "date":"2024-01-31",
+        "title":"Major Rewrite [3.0]",
+        "items":[
+            "Hotspots no longer have to be entered in the script. You can select them from the dropdown listed",
+            "Hotspots are filtered based on your current level",
+            "Added functionality to destroy artifacts",
+            "Added functionality to bank artifacts. [Please refer to the Configuration section on how to set this up]",
+            "After an artifact is found, we instantly start digging again",
+            "Auto Screener support added - If it is present in inventory, doesn't try to drop soil or fill ore box",
+            "Type of soil need not be set anymore, it is automatically infered from the hotspot selected",
+            "Entities with similar names no longer cause an issue"
+        ]
     },
     {
-        "date":"2024-01-02",
-        "title":"Bugfix",
-        "importance":"secondary",
-        "items":["fixed the bug"]
+        "date":"2023-09-21",
+        "title":"Added Functionality [2.0]",
+        "items":[
+            "Overhauled script",
+            "Added UI (Thanks HigginsHax)",
+            "Added checking soilbox content through Varbits",
+            "Added Soil dropping",
+            "Added simple cart depositing"
+        ]
+    },
+    {
+        "date":"2023-08-31",
+        "title":"Release [1.0]",
+        "items":["Release"]
     }
 ]

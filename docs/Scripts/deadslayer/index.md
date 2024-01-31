@@ -1,72 +1,76 @@
 ---
-title: DeadSlayer™
-description: Kills Things
+title: DeadSlayer
+description: General purpose mob killer
 slug: /dead-slayer
 ---
 
-```lua
---[[
-# Script Name:   <DeadSlayer.lua>
-# Description:  <Kills stuff.>
-# Autor:        <Dead (dea.d - Discord)>
-# Version:      <1.1>
-# Datum:        <2023.09.21>
+import React from 'react';
+import TopBanner from '@site/src/components/TopBanner';
+import ContentBlock from '@site/src/components/ContentBlock';
+import Changelog from '@site/src/components/Changelog';
+import BrowserWindow from '@site/src/components/BrowserWindow';
+import changes from './changes.json'
 
-#Changelog
-    - 2023-09-21 [1.1]
-        Added CheckForAnim to handle channeled abilities
-        Added longer delays before clicking next mob
-    - 2023-09-21 [1.0]
-        Release
-#Credits
-Alar (test8888) for the cpp script that inspired this
+<TopBanner title="Dead Slayer" version="2023.09">
+</TopBanner>
 
-# Requirements
-- Eat Food skill on Action bar
+:::hidden
+## Features
+:::
 
-# Features
+<ContentBlock title="Features">
 - Uses Augmented Enhanced Excalibur if found in inventory and health below 50%
 - Uses Elven Ritual Shard if found in inventory and prayer below 50%
 - Uses the Eat Food skill if available and Excalibur is on cooldown and health below 50%
 - If unable to heal and health falls below 20%, uses Wars Retreat teleport and exits
+</ContentBlock>
 
-# Script Setup
-- Set the items that you want to loot in the variable itemIdsToLoot.
-- Below is an example on how I store items and use them
+:::hidden
+## Requirements
+:::
 
-#Script Execution
+<ContentBlock title="Requirements">
+- Eat Food skill on Action bar
+</ContentBlock>
 
-- Click the GET button to populate the dropdown with list of mobs
-- Click the SET button to set the target
-- Click Slaughter to start, it flips over to Pause to pause
-- Click Stop script to exit
-ITEMS = {}
+
+:::hidden
+## Script Execution
+:::
+
+<ContentBlock title="Script Execution">
+- Click the **[GET]** button to populate the dropdown with list of mobs
+- Click the **[SET]** button to set the target
+- Click **[Slaughter]** to start, it flips over to **[Pause]** to pause
+- Click **[Stop]** script to exit
+</ContentBlock>
+
+:::hidden
+## Changelog
+:::
+
+<Changelog changes={changes}>
+
+</Changelog>
+
+:::hidden
+## Code
+:::
+
+<ContentBlock title="Code">
+
+```lua showLineNumbers
+local ITEMS = {}
 
 ITEMS.COMMON = {
-    -- 592, -- ashes
-    995, -- gold coins
-    32341, -- ghostly essence
-}
-
-ITEMS.GEMS = {
-    1623, -- uncut sapphire
-    1621, -- uncut emerald
-    1619, -- uncut ruby
-    1617, -- uncut diamond
-    1631, -- uncut dragonstone
+    995 -- gold coins
 }
 
 ITEMS.RUNES = {
     554, -- fire
     555, -- water
     556, -- air
-    557, -- earth
-    564, -- cosmic
-    561, -- nature
-    563, -- law
-    565, -- blood
-    560, -- death
-    566, -- soul
+    557 -- earth
 }
 
 ITEMS.HERBS = {
@@ -83,29 +87,7 @@ ITEMS.HERBS = {
     12174, -- spirit weed
     3049, -- toadflax
     207, -- ranarr
-    201, -- marrentill
-}
-
-ITEMS.SEEDS = {
-    28265, -- butterfly flower
-    6311, -- gout tuber
-    48201, -- arbuck
-    37952, -- bloodweed
-    21621, -- fellstalk
-    5295, -- ranarr
-    5303, -- dwarf weed
-    14870, -- wergali
-    5304, -- torstol
-    5298, -- avantoe
-    5302, -- lantadyme
-    28264, -- grapevine
-    5316, -- magic
-    5315, -- yew
-    48769, -- ciku
-    48768, -- carambola
-    48764, -- golden dragonfruit
-    31437, -- elder
-    28262, -- snape grass
+    201 -- marrentill
 }
 
 ITEMS.BONES = {
@@ -127,37 +109,49 @@ ITEMS.BONES = {
     530, -- bat
     534, -- baby dragon
     528, -- burnt
-    3125, -- jogre
+    526, -- bones
+    3125 -- jogre
 }
 
 ITEMS.ASHES = {
     34159, -- searing
     33260, -- tortured
-    20268, --infernal
+    20268, -- infernal
     20266, -- accursed
-    20264, -- impious
+    20264 -- impious
 }
 
 ITEMS.ARROWS = {
-    892, -- rune arrows
+    892 -- rune arrows
 }
-return ITEMS
 
-local ITEMS = require("items")
-
-local itemIdsToLoot = UTILS.concatenateTables(ITEMS.COMMON, ITEMS.GEMS, ITEMS.SEEDS, ITEMS.HERBS, ITEMS.RUNES,
-    ITEMS.ARROWS)
---]]
+ITEMS.CHARMS = {
+    12158, -- gold,
+    12159, -- green
+    12160, -- crimson
+    12163, -- blue,
+    12161 -- abyssal
+}
 
 print("Run DeadSlayer.")
 local API = require("api")
 local UTILS = require("utils")
 
---#region User Inputs
-local itemIdsToLoot = { 995 }
---#endregion
+--highlight-start
+local buryBones = true                                     --Set this to true to bury bones that you pickup
+local bonesId = ITEMS.BONES                                --IDS of the bones to bury
+local itemIdsToLoot = UTILS.concatenateTables(             --IDS of the items to loot
+    ITEMS.COMMON,
+    ITEMS.RUNES,
+    ITEMS.BONES,
+    ITEMS.ARROWS,
+    ITEMS.CHARMS)
+--highlight-end
 
---#region Imgui Setup
+-- #region User Inputs
+-- #endregion
+
+-- #region Imgui Setup
 local imguiBackground = API.CreateIG_answer();
 imguiBackground.box_name = "imguiBackground";
 imguiBackground.box_start = FFPOINT.new(16, 20, 0);
@@ -178,7 +172,7 @@ setTargetBtn.tooltip_text = "The script will kill this mob"
 local imguicombo = API.CreateIG_answer()
 imguicombo.box_name = "Mobs     "
 imguicombo.box_start = FFPOINT.new(100, 20, 0)
-imguicombo.stringsArr = { "a", "b" }
+imguicombo.stringsArr = {"a", "b"}
 imguicombo.tooltip_text = "Available mobs to target"
 
 local imguiCurrentTarget = API.CreateIG_answer();
@@ -202,9 +196,9 @@ imguiRuntime.box_name = "imguiRuntime";
 imguiRuntime.box_start = FFPOINT.new(30, 90, 0);
 
 API.DrawComboBox(imguicombo, false)
---#endregion
+-- #endregion
 
---#region Variables init
+-- #region Variables init
 local startTime = os.time()
 local idleTime = os.time()
 local targetPlaceholder = "None. Click Set Mob"
@@ -230,9 +224,9 @@ local COLORS = {
 imguiBackground.colour = COLORS.BACKGROUND
 imguiCurrentTarget.colour = COLORS.TARGET_UNSET
 imguiRuntime.colour = COLORS.SLAUGHTER
---#endregion
+-- #endregion
 
---#region Util functions
+-- #region Util functions
 local function log(text)
     print(string.format("%s - %s", os.date("[%H:%M:%S]"), text))
 end
@@ -259,7 +253,7 @@ end
 local function gameStateChecks()
     local gameState = API.GetGameState()
     if (gameState ~= 3) then
-        log('Not ingame with state:', gameState)
+        API.log('Not ingame with state:', gameState)
         API.Write_LoopyLoop(false)
         return
     end
@@ -275,9 +269,9 @@ local function terminate()
     API.Write_LoopyLoop(false)
 end
 
---#endregion
+-- #endregion
 
---#region UI render functions
+-- #region UI render functions
 local function populateDropdown()
     log('populateDropdown')
     local allNPCS = API.ReadAllObjectsArray(false, 1)
@@ -350,22 +344,37 @@ local function drawGUI()
     API.DrawBox(setTargetBtn)
     API.DrawBox(getTargetBtn)
     imguiCurrentTarget.string_value = "Current target:" .. target
-    imguiRuntime.string_value = formatElapsedTime(startTime) --os.difftime(os.time(),startTime)
+    imguiRuntime.string_value = formatElapsedTime(startTime) -- os.difftime(os.time(),startTime)
     API.DrawBox(imguiSlaughter)
     API.DrawBox(imguiTerminate)
     API.DrawTextAt(imguiCurrentTarget)
     API.DrawTextAt(imguiRuntime)
 end
 
---#endregion
+-- #endregion
 
---#region Script functions
+-- #region Script functions
+
+local function buryBones()
+    while API.InvItemFound2(bonesId) do
+        if not API.Read_LoopyLoop() or not API.PlayerLoggedIn() then
+            break
+        end
+        API.DoAction_Inventory2(bonesId, 0, 1, API.OFF_ACT_GeneralInterface_route)
+        UTILS.randomSleep(600)
+    end
+end
+
 local function loot()
+    -- print(UTILS.printTable(itemIdsToLoot))
     if not API.InvFull_() then
-        -- log('looting')
-        API.DoAction_Loot_w(itemIdsToLoot, 5, API.PlayerCoordfloat(), 10)
+        log('looting')
+
+        API.DoAction_Loot_w(itemIdsToLoot, 10, API.PlayerCoordfloat(), 10)
         UTILS.randomSleep(600)
         API.WaitUntilMovingEnds()
+    else
+        buryBones()
     end
 end
 
@@ -409,7 +418,35 @@ end
 
 local function hasTarget()
     local interacting = API.ReadLpInteracting()
-    if interacting.Id ~= 0 then return true else return false end
+    if interacting.Id ~= 0 then
+        return true
+    else
+        return false
+    end
+end
+
+local function getDistinctByProperty(inputTable, property)
+    local distinctValues = {}
+    local seenValues = {}
+  
+    for _, value in ipairs(inputTable) do
+      local prop = value[property]
+      if not seenValues[prop] then
+        table.insert(distinctValues, value)
+        seenValues[prop] = true
+      end
+    end
+    return distinctValues
+  end
+
+  local function filterByHealth(mobs, minHealth)
+    local result = {}
+    for _, mob in ipairs(mobs) do
+        if mob.Life >= minHealth then
+            table.insert(result, mob)
+        end
+    end
+    return result
 end
 
 local function KillMob(name)
@@ -417,18 +454,31 @@ local function KillMob(name)
         log('No target selected, stopping slayer');
         pauseSlayer()
     end
-    if not hasTarget() and not API.CheckAnim(20) then
+    if not hasTarget() and not API.CheckAnim(15) then
         loot()
         local attackingMe = API.OthersInteractingWithLpNPC(true, 10)
         if #attackingMe > 0 then
-            if attackingMe[1].Name == target then
-                API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, attackingMe[1])
-                UTILS.randomSleep(600)
-            end
+            -- if attackingMe[1].Name == target then
+            API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, attackingMe[1])
+            UTILS.randomSleep(600)
+            targetNotFoundCount = 0
+            -- end
         else
-            if API.DoAction_NPC_str(0x2a, API.OFF_ACT_AttackNPC_route, { name }, 40, false, 50) then
-                UTILS.randomSleep(600)
-                API.WaitUntilMovingEnds()
+            local targets = API.GetAllObjArrayInteract_str({name}, 30, 1)
+            if #targets > 0 then
+                table.sort(targets, function(k1, k2)
+                    return k1.Distance < k2.Distance
+                end)
+                local alive = filterByHealth(targets,1)
+                if API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, alive[1]) then
+                    targetNotFoundCount = 0
+                    UTILS.randomSleep(600)
+                    API.WaitUntilMovingEnds()
+                end
+                -- if API.DoAction_NPC_str(0x2a, API.OFF_ACT_AttackNPC_route, { name }, 40, false, 50) then
+                --     UTILS.randomSleep(600)
+                --     API.WaitUntilMovingEnds()
+                --     targetNotFoundCount = 0
             else
                 log('unable to find target')
                 targetNotFoundCount = targetNotFoundCount + 1
@@ -441,9 +491,9 @@ local function KillMob(name)
         usePrayers()
     end
 end
---#endregion
+-- #endregion
 
---#region Main loop
+-- #region Main loop
 API.Write_LoopyLoop(true)
 populateDropdown()
 while (API.Read_LoopyLoop()) do -----------------------------------------------------------------------------------
@@ -456,5 +506,16 @@ while (API.Read_LoopyLoop()) do ------------------------------------------------
     end
     UTILS.randomSleep(300)
 end ----------------------------------------------------------------------------------
---#endregion
+-- #endregion
 ```
+
+</ContentBlock>
+:::hidden
+## Credits
+:::
+
+<ContentBlock title="Credits">
+- #### Alar
+  - Contribution - Gave us **ME**
+
+</ContentBlock>

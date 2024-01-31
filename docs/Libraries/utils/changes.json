@@ -1,0 +1,24 @@
+[
+    {
+        "date":"2024-01-31",
+        "title":"Reworked [2.0]",
+        "items":[
+            "Added UTILS:antiIdle()",
+            "Added UTILS.gameStateChecks()",
+            "Added UTILS.CanUseLodestone()",
+            "Added UTILS.getDistinctByProperty()",
+            "Added UTILS.LoadActionBar()",
+            "Added UTILS.getSkillOnBar()",
+            "Added UTILS.countTicks()",
+            "Added UTILS.rangeSleep()",
+            "Added UTILS.SleepUntil()",
+            "Added UTILS.SleepUtilWithoutChecks()",
+            "Added UTILS.getAmountInOrebox()"
+        ]
+    },
+    {
+        "date":"2024-01-20",
+        "title":"Release [1.0]",
+        "items":["Release"]
+    }
+]

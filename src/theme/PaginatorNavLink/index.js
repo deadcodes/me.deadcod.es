@@ -23,7 +23,7 @@ export default function PaginatorNavLink(props) {
     backgroundColor: "#201b23",
     padding: 12,
     height: "auto",
-    borderRadius: "var(--ifm-global-radius)",
+    // borderRadius: "var(--ifm-global-radius)",
     marginBottom: 24,
   };
 

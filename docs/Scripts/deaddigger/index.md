@@ -1,6 +1,6 @@
 ---
-title: DeadDigger™
-description: Digs Things
+title: DeadDigger
+description: Archaeology
 slug: /dead-digger
 ---
 
@@ -9,18 +9,10 @@ import TopBanner from '@site/src/components/TopBanner';
 import ContentBlock from '@site/src/components/ContentBlock';
 import Changelog from '@site/src/components/Changelog';
 import BrowserWindow from '@site/src/components/BrowserWindow';
-import changes from './changes.json'
+import changes from './changes.json';
 
-<TopBanner title="Dead Digger" version="2023.11.1">
+<TopBanner title="Dead Digger" version="2024.01" skill="Archaeology">
 </TopBanner>
-
-:::hidden
-## Configuration
-:::
-
-<ContentBlock title="Configuration">
-IM THE CONTENT
-</ContentBlock>
 
 :::hidden
 ## Changelog
@@ -31,74 +23,168 @@ IM THE CONTENT
 </Changelog>
 
 :::hidden
+## Requirements
+:::
+
+<ContentBlock title="Requirements">
+
+- AutoScreener / Soilbox has to be present in inventory
+- Soildbox has to be on the action bar slot with a keybind configured
+- The soil for the location you're at should be on the action bar slot with a keybind configured
+- Steps mentioned in the Configuration section have to be followed for proper functionality of the following
+    - Depositing materials
+    - Banking artifacts
+</ContentBlock>
+
+:::hidden
+## Configuration
+:::
+
+<ContentBlock title="Configuration">
+
+The following three methods have to be configured by you based on the digsite.
+
+- ### Depositing
+
+The following function has to be configured based on the excavation site you're at.
+
+```lua
+-- This function handles depositing
+local function depositCart()
+    API.logDebug('Inventory is full after using soilbox, trying to deposit: ' .. depositAttempt)
+    depositAttempt = depositAttempt + 1;
+    local cart = API.GetAllObjArrayInteract_str({ cartName }, 60, 0)
+    if #cart > 0 then
+        API.DoAction_Object_string1(0x29, API.OFF_ACT_GeneralObject_route0, { cartName },
+            60, true);
+        UTILS.randomSleep(800)
+        API.WaitUntilMovingEnds()
+        if not API.InvFull_() then
+            depositAttempt = 0
+        end
+    else
+        API.logWarn('Didn\'t find: "' .. cartName .. '" within 60 tiles')
+    end
+end
+```
+
+- ### Banking
+
+This function handles banking when `Bank Artifacts` is selected.
+
+```lua
+
+local function bank()
+    API.logDebug('Going to bank')
+end
+```
+
+Once you're done banking, you'd have to traverse back to the digsite, which is handled by the below function.
+
+```lua
+
+local function goBack()
+    API.logDebug('Going back to digsite')
+end
+```
+
+</ContentBlock>
+
+:::hidden
 ## Code
 :::
 
 <ContentBlock title="Code">
 
-```js showLineNumbers
+```lua showLineNumbers
 local API = require("api")
 local UTILS = require("utils")
 
--- #region Imgui Setup - made by Dead
-local imguiBackground = API.CreateIG_answer();
-imguiBackground.box_name = "imguiBackground";
--- imguiBackground.box_start = FFPOINT.new(16, 20, 0);
-imguiBackground.box_start = FFPOINT.new(16, 50, 0);
-imguiBackground.box_size = FFPOINT.new(300, 116, 0)
+API.SetDrawLogs(true)
+API.SetDrawTrackedSkills(true)
 
-local getTargetBtn = API.CreateIG_answer();
-getTargetBtn.box_name = "Get";
-getTargetBtn.box_start = FFPOINT.new(16, 50, 0);
-getTargetBtn.box_size = FFPOINT.new(50, 30, 0);
-getTargetBtn.tooltip_text = "Populate spot list"
+--#region User Inputs
+-- highlight-next-line
+local cartName = "Material storage container"               -- name of the object to deposit materials
 
-local setTargetBtn = API.CreateIG_answer();
-setTargetBtn.box_name = "Set";
-setTargetBtn.box_start = FFPOINT.new(60, 50, 0);
-setTargetBtn.box_size = FFPOINT.new(50, 30, 0);
-setTargetBtn.tooltip_text = "The script will excavate this spot"
+--highlight-start
+--https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+local soilboxKeybind = 0x6D                                 -- keybind of the soilbox on actionbar
+local soilKeybind = 0x6B                                    -- keybind of the soil on actionbar
+local soilboxCapacity = 100                                 -- capacity of the soilbox. Increase can be purchased
+--highlight-end
+--#endregion
+
+--#region Imgui Setup
+local imguiBackground = API.CreateIG_answer()
+imguiBackground.box_name = "imguiBackground"
+imguiBackground.box_start = FFPOINT.new(16, 20, 0)
+imguiBackground.box_size = FFPOINT.new(400, 116, 0)
+
+local getTargetBtn = API.CreateIG_answer()
+getTargetBtn.box_name = "Get"
+getTargetBtn.box_start = FFPOINT.new(16, 20, 0)
+getTargetBtn.box_size = FFPOINT.new(50, 30, 0)
+getTargetBtn.tooltip_text = "Populate hotspots list"
+
+local setTargetBtn = API.CreateIG_answer()
+setTargetBtn.box_name = "Set"
+setTargetBtn.box_start = FFPOINT.new(60, 20, 0)
+setTargetBtn.box_size = FFPOINT.new(50, 30, 0)
+setTargetBtn.tooltip_text = "The script excavate this spot"
 
 local imguicombo = API.CreateIG_answer()
-imguicombo.box_name = "Spots    "
-imguicombo.box_start = FFPOINT.new(100, 50, 0)
-imguicombo.stringsArr = {"a", "b"}
-imguicombo.tooltip_text = "Available spot to target"
+imguicombo.box_name = "Hotspots     "
+imguicombo.box_start = FFPOINT.new(100, 20, 0)
+imguicombo.stringsArr = { "a", "b" }
+imguicombo.tooltip_text = "Available hotspots to target"
 
-local imguiCurrentTarget = API.CreateIG_answer();
-imguiCurrentTarget.box_name = "Current Target:";
-imguiCurrentTarget.box_start = FFPOINT.new(30, 80, 0);
+local imguiCurrentTarget = API.CreateIG_answer()
+imguiCurrentTarget.box_name = "Current Target:"
+imguiCurrentTarget.box_start = FFPOINT.new(30, 50, 0)
 
-local imguiEXCAVATE = API.CreateIG_answer();
-imguiEXCAVATE.box_name = "EXCAVATE";
-imguiEXCAVATE.box_start = FFPOINT.new(18, 80, 0);
-imguiEXCAVATE.box_size = FFPOINT.new(80, 30, 0);
-imguiEXCAVATE.tooltip_text = "Start/Stop excavating"
+local imguiExcavate = API.CreateIG_answer()
+imguiExcavate.box_name = "Excavate"
+imguiExcavate.box_start = FFPOINT.new(18, 60, 0)
+imguiExcavate.box_size = FFPOINT.new(80, 30, 0)
+imguiExcavate.tooltip_text = "Start/Stop Excavating"
 
-local imguiTerminate = API.CreateIG_answer();
-imguiTerminate.box_name = "Stop Script";
-imguiTerminate.box_start = FFPOINT.new(100, 80, 0);
-imguiTerminate.box_size = FFPOINT.new(100, 30, 0);
+local imguiTerminate = API.CreateIG_answer()
+imguiTerminate.box_name = "Stop Script"
+imguiTerminate.box_start = FFPOINT.new(100, 60, 0)
+imguiTerminate.box_size = FFPOINT.new(100, 30, 0)
 imguiTerminate.tooltip_text = "Exit the script"
 
--- local imguiRuntime = API.CreateIG_answer();
--- imguiRuntime.box_name = "imguiRuntime";
--- imguiRuntime.box_start = FFPOINT.new(30, 90, 0);
+local imguiRuntime = API.CreateIG_answer()
+imguiRuntime.box_name = "imguiRuntime"
+imguiRuntime.box_start = FFPOINT.new(30, 90, 0)
 
-API.DrawComboBox(imguicombo, false)
--- #endregion
+local imguiDestroy = API.CreateIG_answer()
+imguiDestroy.box_name = "Destroy Artifacts"
+imguiDestroy.tooltip_text = "Destroying: false"
+imguiDestroy.box_start = FFPOINT.new(200, 60, 0)
 
--- #region Variables init
+local imguiBank = API.CreateIG_answer()
+imguiBank.box_name = "Bank Artifacts"
+imguiBank.tooltip_text = "Banking: false"
+imguiBank.box_start = FFPOINT.new(200, 80, 0)
 
-local runDigger = false
+--#endregion
+
+--#region Variables init
+local targetPlaceholder = "None. Click Set Hotspot"
+local MAX_IDLE_TIME_MINUTES = 5
+local startTime, afk = os.time(), os.time()
+local depositAttempt = 0
+local artifactsFound = 0
+local soilBoxFull = false
+local shouldBank = false
+local shouldDestroy = false
+local target = targetPlaceholder
+local runLoop = false
 local targetNotFoundCount = 0
-
-local IDS = {
-    EXCALIBUR = 14632,
-    EXCALIBUR_AUGMENTED = 36619,
-    ELVEN_SHARD = 43358
-}
-
+local targets = {}
+local selectedTarget
 local COLORS = {
     BACKGROUND = ImColor.new(10, 13, 29),
     TARGET_UNSET = ImColor.new(189, 185, 167),
@@ -110,116 +196,636 @@ local COLORS = {
 
 imguiBackground.colour = COLORS.BACKGROUND
 imguiCurrentTarget.colour = COLORS.TARGET_UNSET
--- imguiRuntime.colour = COLORS.EXCAVATE
--- #endregion
+imguiRuntime.colour = COLORS.EXCAVATE
+--#endregion
 
-local MAX_IDLE_TIME_MINUTES = 5
-local soilBoxFull = false;
-local depositAttempt = 0
+--#region Util functions
 
--- #region User Inputs
-local itemToGather = "None. Select one Spot"
-local cartName = "Materials cart"
-local soilboxKeybind = "-"
-local soilKeybind = "="
-local soilboxCapacity = 50
+local function idleCheck()
+    local timeDiff = os.difftime(os.time(), afk)
+    local randomTime = math.random((MAX_IDLE_TIME_MINUTES * 60) * 0.6, (MAX_IDLE_TIME_MINUTES * 60) * 0.9)
 
-local SOILS = {
-    ANCIENT_GRAVEL = {
-        label = "Ancient gravel",
-        vb = 9370
-    },
-    FIERY_BRIMSTONE = {
-        label = "Fiery brimstone",
-        vb = 9372
-    },
-    SALTWATER_MUD = {
-        label = "Saltwater mud",
-        vb = 9371
-    },
-    AERATED_SEDIMENT = {
-        label = "Aerated sediment",
-        vb = 9373
-    },
-    EARTHEN_CLAY = {
-        label = "Earthen clay",
-        vb = 9374
-    },
-    VOLCANIC_ASH = {
-        label = "Volcanic ash",
-        vb = 9578
-    }
-}
+    if timeDiff > randomTime then
+        API.PIdle2()
+        afk = os.time()
+    end
+end
 
-local ExcavationSpots = {"Venator remains", "Legionary remains", "Castra debris", "Lodge bar storage",
-                         "Lodge art storage", "Administratum debris", "Cultist footlocker", "Sacrificial altar",
-                         "Prodromoi remains", "Dis dungeon debris", "Praesidio remains", "Monoceros remains",
-                         "Amphitheatre debris", "Ceramics studio debris", "Carcerem debris", "Stadio debris",
-                         "Infernal art", "Shakroth remains", "Dominion games podium", "Ikovian memorial",
-                         "Oikos studio debris", "Kharid-et chapel debris", "Gladitorial goblin remains", "Keshik ger",
-                         "Crucible stands debris", "Pontifex remains", "Animal trophies", "Tailory debris",
-                         "Goblin dorm debris", "Oikos fishing hut remnants", "Weapons research debris", "Orcus altar",
-                         "Dis overspill", "Big High War God shrine", "Varanusaur remains", "Gravitron research debris",
-                         "Acropolis debris", "Armarium debris", "Yu'biusk animal pen", "Keshik tower debris",
-                         "Dragonkin reliquary", "Goblin trainee remains", "Byzroth remains", "Destroyed golem",
-                         "Dragonkin coffin", "Kyzaj champion's boudoir", "Culinarum debris", "Icyene weapon rack",
-                         "Autopsy table", "Experiment workbench", "Keshik weapon rack", "Hellfire forge",
-                         "Warforge scrap pile", "Stockpiled art", "Aughra remains", "Ancient magick munitions",
-                         "Moksha device", "Bibliotheke debris", "Chthonian trophies", "Warforge weapon rack",
-                         "Flight research debris", "Aetherium forge", "Xolo mine", "Praetorian remains",
-                         "Bandos' sanctum debris", "Tsutsaroth remains", "Optimatoi debris", "Howl's workshop debris",
-                         "War table debris", "Makeshift pie oven", "Xolo remains", "Saurthen debris"}
-
-local ExcavationSpotsFound = {}
-
-local soil = SOILS.FIERY_BRIMSTONE
--- #endregion
+local function formatElapsedTime(start)
+    local currentTime = os.time()
+    local elapsedTime = currentTime - start
+    local hours = math.floor(elapsedTime / 3600)
+    local minutes = math.floor((elapsedTime % 3600) / 60)
+    local seconds = elapsedTime % 60
+    return string.format("Runtime: %02d:%02d:%02d", hours, minutes, seconds)
+end
 
 local function gameStateChecks()
     local gameState = API.GetGameState()
     if (gameState ~= 3) then
-        print('Not ingame with state:', gameState)
+        API.logError('Not ingame with state: ' .. tostring(gameState))
+        print('Not ingame with state: ' .. tostring(gameState))
         API.Write_LoopyLoop(false)
         return
     end
     if targetNotFoundCount > 30 then
-        imguiEXCAVATE.box_name = "Excavate"
-        runDigger = false;
+        imguiExcavate.box_name = "Excavate"
+        runLoop = false
         API.Write_LoopyLoop(false)
     end
 end
+
 local function terminate()
-    runDigger = false
+    runLoop = false
     API.Write_LoopyLoop(false)
 end
--- imguicombo.stringsArr = ExcavationSpots
-local function populateDropdown()
-    print('populateDropdown')
-    local allNPCS = API.ReadAllObjectsArray(false, 0)
-    local objects = {}
-    if #allNPCS > 0 then
-        for _, a in pairs(allNPCS) do
-            local distance = API.Math_DistanceF(a.Tile_XYZ, API.PlayerCoordfloat())
-            a.Distance = distance;
-            if a.Id ~= 0 and distance < 50 and a.Name ~= "" then
-                for _, v in pairs(ExcavationSpots) do
-                    if v == a.Name then
-                        table.insert(objects, a.Name)
+
+--#endregion
+
+
+local DIGSITES = {
+    EVERLIGHT = {
+        SOIL = { ID = 49519, VB = 9371 },
+        PRODROMOI = {
+            LABEL = "Prodromoi remains",
+            ID = { 116661 },
+            LEVEL = 42
+        },
+        MONOCEROS = {
+            LABEL = "Monoceros remains",
+            ID = { 116663 },
+            LEVEL = 48
+        },
+        AMPHITHEATER = {
+            LABEL = "Amphitheatre debris",
+            ID = { 116665 },
+            LEVEL = 51
+        },
+        CERAMICS = {
+            LABEL = "Ceramics studio debris",
+            ID = { 116666, 116667 },
+            LEVEL = 56
+        },
+        STADIO = {
+            LABEL = "Stadio debris",
+            ID = { 116669 },
+            LEVEL = 61
+        },
+        DOMINION = {
+            LABEL = "Dominion Games podium",
+            ID = { 116671 },
+            LEVEL = 69
+        },
+        OIKOS_STUDIO = {
+            LABEL = "Oikos studio debris",
+            ID = { 116673 },
+            LEVEL = 72
+        },
+        OIKOS_HUT = {
+            LABEL = "Oikos fishing hut remnants",
+            ID = { 116675 },
+            LEVEL = 84
+        },
+        ACROPOLIS = {
+            LABEL = "Acropolis debris",
+            ID = { 116677 },
+            LEVEL = 92
+        },
+        ICYENE = {
+            LABEL = "Icyene weapon rack",
+            ID = { 116679 },
+            LEVEL = 100
+        },
+        STOCKPILED_ART = {
+            LABEL = "Stockpiled art",
+            ID = { 116683 },
+            LEVEL = 105
+        },
+        BIBLIOTHEKE = {
+            LABEL = "Bibliotheke debris",
+            ID = { 116680, 116681 },
+            LEVEL = 109
+        },
+        OPTIMATOI = {
+            LABEL = "Optimatoi remains",
+            ID = { 116685 },
+            LEVEL = 117
+        }
+    },
+    INFERNAL = {
+        SOIL = { ID = 49521, VB = 9372 },
+        LODGE_BAR = {
+            LABEL = "Lodge bar storage",
+            ID = { 116817 },
+            LEVEL = 20
+        },
+        LODGE_ART = {
+            LABEL = "Lodge art storage",
+            ID = { 116819 },
+            LEVEL = 24
+        },
+        CULTIST = {
+            LABEL = "Cultist footlocker",
+            ID = { 116821 },
+            LEVEL = 29
+        },
+        SACRIFICIAL = {
+            LABEL = "Sacrificial altar",
+            ID = { 116823 },
+            LEVEL = 36
+        },
+        DIS_DUNGEON = {
+            LABEL = "Dis dungeon debris",
+            ID = { 116825 },
+            LEVEL = 45
+        },
+        INFERNAL = {
+            LABEL = "Infernal art",
+            ID = { 116827 },
+            LEVEL = 65
+        },
+        SHAKROTH = {
+            LABEL = "Shakroth remains",
+            ID = { 116829 },
+            LEVEL = 68
+        },
+        ANIMAL_TROPHIES = {
+            LABEL = "Animal trophies",
+            ID = { 116831 },
+            LEVEL = 81
+        },
+        DIS_OVERSPILL = {
+            LABEL = "Dis overspill",
+            ID = { 116833 },
+            LEVEL = 89
+        },
+        BYZROTH = {
+            LABEL = "Byzroth remains",
+            ID = { 116835 },
+            LEVEL = 98
+        },
+        HELLFIRE_FORGE = {
+            LABEL = "Hellfire forge",
+            ID = { 116839 },
+            LEVEL = 104
+        },
+        CHTHONIAN = {
+            LABEL = "Chthonian trophies",
+            ID = { 116837 },
+            LEVEL = 110
+        },
+        TSUTSAROTH = {
+            LABEL = "Tsutsaroth remains",
+            ID = { 116841 },
+            LEVEL = 116
+        }
+    },
+    KHARID = {
+        SOIL = { ID = 49517, VB = 9370 },
+        VENATOR = {
+            LABEL = "Venator remains",
+            ID = { 117101 },
+            LEVEL = 5
+        },
+        LEGIONARY = {
+            LABEL = "Legionary remains",
+            ID = { 117103 },
+            LEVEL = 12
+        },
+        FORT = {
+            LABEL = "Fort debris",
+            ID = { 116921, 116922, 116923, 116924 },
+            LEVEL = 12
+        },
+        CASTRA = {
+            LABEL = "Castra debris",
+            ID = { 117106 },
+            LEVEL = 12
+        },
+        ADMINISTRATUM = {
+            LABEL = "Administratum debris",
+            ID = { 117108 },
+            LEVEL = 25
+        },
+        PRAESIDIO = {
+            LABEL = "Praesidio remains",
+            ID = { 117110 },
+            LEVEL = 47
+        },
+        CARCERUM = {
+            LABEL = "Carcerem debris",
+            ID = { 117112 },
+            LEVEL = 58
+        },
+        CHAPEL = {
+            LABEL = "Kharid-et chapel debris",
+            ID = { 117114 },
+            LEVEL = 74
+        },
+        PONTIFEX = {
+            LABEL = "Pontifex remains",
+            ID = { 117116 },
+            LEVEL = 81
+        },
+        ORCUS_ALTAR = {
+            LABEL = "Orcus altar",
+            ID = { 117118 },
+            LEVEL = 86
+        },
+        ARMARIUM = {
+            LABEL = "Armarium debris",
+            ID = { 117120 },
+            LEVEL = 93
+        },
+        CULINARUM = {
+            LABEL = "Culinarum debris",
+            ID = { 117122, 119386 },
+            LEVEL = 100
+        },
+        ANCIENT = {
+            LABEL = "Ancient magick munitions",
+            ID = { 117124 },
+            LEVEL = 107
+        },
+        PRAETORIAN = {
+            LABEL = "Praetorian remains",
+            ID = { 117126 },
+            LEVEL = 114
+        },
+        WAR = {
+            LABEL = "War table debris",
+            ID = { 117128 },
+            LEVEL = 118
+        }
+    },
+    ORTHEN = {
+        SOIL = { ID = 50696, VB = 9578 },
+        VARANUSAUR = {
+            LABEL = "Varanusaur remains",
+            ID = { 119075 },
+            LEVEL = 90
+        },
+        RELIQUARY = {
+            LABEL = "Dragonkin reliquary",
+            ID = { 119077 },
+            LEVEL = 96
+        },
+        COFFIN = {
+            LABEL = "Dragonkin coffin",
+            ID = { 119079 },
+            LEVEL = 99
+        },
+        AUTOPSY = {
+            LABEL = "Autopsy table",
+            ID = { 119081 },
+            LEVEL = 101
+        },
+        EXPERIMENT = {
+            LABEL = "Experiment workbench",
+            ID = { 119083 },
+            LEVEL = 102
+        },
+        AUGHRA = {
+            LABEL = "Aughra remains",
+            ID = { 119085 },
+            LEVEL = 106
+        },
+        MOKSHA = {
+            LABEL = "Moksha device",
+            ID = { 119087 },
+            LEVEL = 108
+        },
+        MINE = {
+            LABEL = "Xolo mine",
+            ID = { 119089 },
+            LEVEL = 113
+        },
+        REMAINS = {
+            LABEL = "Xolo remains",
+            ID = { 119091 },
+            LEVEL = 119
+        },
+        SAURTHEN = {
+            LABEL = "Saurthen debris",
+            ID = { 119093 },
+            LEVEL = 120
+        }
+    },
+    SENNTISTEN = {
+        SOIL = { ID = 49517, VB = 9370 },
+        MINISTRY = {
+            LABEL = "Ministry remains",
+            ID = { 121157 },
+            LEVEL = 60
+        },
+        CATHEDRAL = {
+            LABEL = "Cathedral debris",
+            ID = { 121155 },
+            LEVEL = 62
+        },
+        MARKETPLACE = {
+            LABEL = "Marketplace debris",
+            ID = { 121159 },
+            LEVEL = 63
+        },
+        INQUISITOR = {
+            LABEL = "Inquisitor remains",
+            ID = { 121161 },
+            LEVEL = 64
+        },
+        GLADIATOR = {
+            LABEL = "Gladiator remains",
+            ID = { 121165 },
+            LEVEL = 66
+        },
+        CITIZEN = {
+            LABEL = "Citizen remains",
+            ID = { 121163 },
+            LEVEL = 67
+        }
+    },
+    STORMGUARD = {
+        SOIL = { ID = 49523, VB = 9373 },
+        IKOVIAN = {
+            LABEL = "Ikovian memorial",
+            ID = { 117202 },
+            LEVEL = 70
+        },
+        KESHIK = {
+            LABEL = "Keshik ger",
+            ID = { 117204 },
+            LEVEL = 76
+        },
+        TAILORY = {
+            LABEL = "Tailory debris",
+            ID = { 117206 },
+            LEVEL = 81
+        },
+        WEAPONS = {
+            LABEL = "Weapons research debris",
+            ID = { 117208 },
+            LEVEL = 85
+        },
+        GRAVITRON = {
+            LABEL = "Gravitron research debris",
+            ID = { 117210 },
+            LEVEL = 91
+        },
+        TOWER = {
+            LABEL = "Keshik tower debris",
+            ID = { 117214 },
+            LEVEL = 95
+        },
+        GOLEM = {
+            LABEL = "Destroyed golem",
+            ID = { 117216 },
+            LEVEL = 98
+        },
+        RACK = {
+            LABEL = "Keshik weapon rack",
+            ID = { 117218 },
+            LEVEL = 103
+        },
+        FLIGHT = {
+            LABEL = "Flight research debris",
+            ID = { 117212 },
+            LEVEL = 111
+        },
+        AETHERIUM = {
+            LABEL = "Aetherium forge",
+            ID = { 117220 },
+            LEVEL = 112
+        },
+        HOWL = {
+            LABEL = "Howls workshop debris",
+            ID = { 117222 },
+            LEVEL = 118
+        }
+    },
+    WARFORGE = {
+        SOIL = { ID = 49525, VB = 9374 },
+        GLADIATORIAL = {
+            LABEL = "Gladiatorial goblin remains",
+            ID = { 117365 },
+            LEVEL = 76
+        },
+        CRUCIBLE = {
+            LABEL = "Crucible stands debris",
+            ID = { 117367 },
+            LEVEL = 81
+        },
+        DORM = {
+            LABEL = "Goblin dorm debris",
+            ID = { 117371 },
+            LEVEL = 83
+        },
+        BARRICADE = {
+            LABEL = "Barricade",
+            ID = { 117246, 117247 },
+            LEVEL = 83
+        },
+        WAR_GOD = {
+            LABEL = "Big High War God shrine",
+            ID = { 117377 },
+            LEVEL = 89
+        },
+        YUBIUSK = {
+            LABEL = "Yubiusk animal pen",
+            ID = { 117373 },
+            LEVEL = 94
+        },
+        GOBLIN = {
+            LABEL = "Goblin trainee remains",
+            ID = { 117379 },
+            LEVEL = 97
+        },
+        KYJAZ = {
+            LABEL = "Kyzaj champions boudoir",
+            ID = { 117375 },
+            LEVEL = 100
+        },
+        SCRAP = {
+            LABEL = "Warforge scrap pile",
+            ID = { 117381 },
+            LEVEL = 104
+        },
+        RACK = {
+            LABEL = "Warforge weapon rack",
+            ID = { 117383 },
+            LEVEL = 110
+        },
+        BANDOS = {
+            LABEL = "Bandos sanctum debris",
+            ID = { 117369 },
+            LEVEL = 115
+        },
+        PIE = {
+            LABEL = "Makeshift pie oven",
+            ID = { 117385 },
+            LEVEL = 119
+        }
+    }
+}
+
+local IDS = {
+    SOILBOX = 49538,
+    AUTOSCREENER = 50161
+}
+
+local function filterDigsitesByLevel(digsites, level)
+    local filteredDigsites = {}
+
+    for zone, locations in pairs(digsites) do
+        filteredDigsites[zone] = {}
+        for location, data in pairs(locations) do
+            if type(data) == "table" and data.LEVEL and data.LEVEL <= level then
+                table.insert(filteredDigsites[zone], { [location] = data })
+            end
+        end
+
+        table.sort(filteredDigsites[zone], function(a, b)
+            return a[next(a)].LEVEL > b[next(b)].LEVEL
+        end)
+    end
+    return filteredDigsites
+end
+
+-- Function to filter DIGSITES by IDs
+local function filterDigsitesByIds(digsites, idsToFilter)
+    local filteredDigsites = {}
+    for zone, locations in pairs(digsites) do
+        filteredDigsites[zone] = {}
+        for location, data in pairs(locations) do
+            if type(data) == "table" and data.VB then
+                -- ignore soil table
+            elseif type(data) == "table" and data.ID then
+                local filteredIdTable = {}
+                for _, id in ipairs(data.ID) do
+                    if UTILS.tableIncludes(idsToFilter, id) then
+                        table.insert(filteredIdTable, id)
                     end
+                end
+                if #filteredIdTable > 0 then
+                    local filteredData = { LABEL = data.LABEL, ID = filteredIdTable, LEVEL = data.LEVEL }
+                    table.insert(filteredDigsites[zone], { [location] = filteredData })
                 end
             end
         end
-        local distinct = UTILS.getDistinctValues(objects)
-        if #distinct > 0 then
-            table.sort(distinct)
-            imguicombo.stringsArr = distinct
+        table.sort(filteredDigsites[zone], function(a, b)
+            return a[next(a)].LEVEL > b[next(b)].LEVEL
+        end)
+    end
+
+    return filteredDigsites
+end
+
+local function getFilteredItemIds(filteredDigsites)
+    local ids = {}
+
+    for _, locations in pairs(filteredDigsites) do
+        for _, locationData in ipairs(locations) do
+            for _, data in pairs(locationData) do
+                for _, id in ipairs(data.ID) do
+                    table.insert(ids, id)
+                end
+            end
         end
+    end
+
+    return ids
+end
+
+local function populateDropdown()
+    local filteredHotspots = filterDigsitesByLevel(DIGSITES, API.GetSkillByName("ARCHAEOLOGY").level)
+    -- Get the IDs of the filtered and sorted items
+    local items = {}
+    local filteredItemIds = getFilteredItemIds(filteredHotspots)
+    local found = API.GetAllObjArrayInteract(filteredItemIds, 70, 0)
+
+    local distinct = UTILS.getDistinctByProperty(found, 'Id')
+    for i = 1, #distinct, 1 do
+        local item = distinct[i]
+        table.insert(items, (item.Id))
+    end
+
+    local foundThingsByLevel = filterDigsitesByIds(DIGSITES, items)
+
+    for zone, locations in pairs(foundThingsByLevel) do
+        for _, locationData in ipairs(locations) do
+            for location, data in pairs(locationData) do
+                table.insert(targets,
+                    { SOIL = DIGSITES[zone].SOIL, LABEL = "Lvl:" .. data.LEVEL .. " - " .. data.LABEL, IDS = data.ID })
+            end
+        end
+    end
+
+    if #targets > 0 then
+        local valueStrings = {}
+        for i = 1, #targets, 1 do
+            local item = targets[i]
+            table.insert(valueStrings, item.LABEL)
+        end
+        imguicombo.stringsArr = valueStrings
+        imguicombo.int_value = 0
+    else
+        API.logWarn('No hotspots found in range')
+    end
+    -- return dropdownValues
+end
+
+local function setHotspot()
+    API.logDebug('setHotspot')
+    local currentHotspot = target
+    local selected = imguicombo.stringsArr[imguicombo.int_value + 1]
+    selectedTarget = targets[imguicombo.int_value + 1]
+    if currentHotspot ~= selected then
+        target = selected
+    end
+    imguiCurrentTarget.colour = COLORS.TARGET_SET
+    setTargetBtn.return_click = false
+end
+
+local function pauseExcavation()
+    runLoop = false
+    API.logDebug("Excavation paused")
+    imguiExcavate.return_click = false
+    imguiCurrentTarget.colour = COLORS.PAUSED
+    imguiRuntime.colour = COLORS.PAUSED
+    imguiExcavate.box_name = "Excavate"
+end
+
+local function startExcavation()
+    API.logDebug("Excavation started")
+    runLoop = true
+    imguiCurrentTarget.colour = COLORS.EXCAVATE
+    imguiRuntime.colour = COLORS.EXCAVATE
+    imguiExcavate.box_name = "Pause"
+end
+
+local artifactFoundInterface = {
+    InterfaceComp5.new(1189, 2, -1, -1, 0),
+}
+
+local destroyInterface = {
+    InterfaceComp5.new(1183, 11, -1, -1, 0),
+}
+
+local function destroyInterfaceFound()
+    local result = API.ScanForInterfaceTest2Get(true, destroyInterface)
+    if #result > 0 then
+        return true
+    else
+        return false
     end
 end
 
--- Get Current Time in [hh:mm:ss]
-local function getCurrentTimeFormatted()
-    return os.date("[%H:%M:%S]")
+local function artifactFoundInterfacePresent()
+    local result = API.ScanForInterfaceTest2Get(true, artifactFoundInterface)
+    if #result > 0 then
+        return true
+    else
+        return false
+    end
 end
 
 local function FindHl(objects, maxdistance, highlight)
@@ -237,119 +843,167 @@ local function FindHl(objects, maxdistance, highlight)
     end
     return shiny
 end
-local function followTimeSprite(objects)
-    local targets = API.FindObject_string(objects, 60)
-    local targetIds = {}
-    for i = 1, #targets do
-        local rock = targets[i]
-        if rock.Id ~= 116784 then -- Sacrifical altar/same name as spot
-            table.insert(targetIds, rock.Id)
-        end
-    end
-    local sprite = FindHl(targetIds, 60, {7307})
-    if sprite.Id ~= nil then
-        local spritePos = WPOINT.new(sprite.TileX / 512, sprite.TileY / 512, sprite.TileZ / 512)
-        local distanceF = API.Math_DistanceF(API.PlayerCoordfloat(), sprite.Tile_XYZ)
-        if distanceF > 2 then
-            UTILS.randomSleep(1000)
-            print("Sprite has moved, chasing it")
-            API.DoAction_Object2(0x2, API.OFF_ACT_GeneralObject_route0, {sprite.Id}, 60, spritePos);
-            UTILS.randomSleep(1000)
-            API.WaitUntilMovingEnds()
-        end
-        if not API.CheckAnim(100) then
-            print("Excavating " .. itemToGather)
-            API.DoAction_Object1(0x2, API.OFF_ACT_GeneralObject_route0, targetIds, 60);
+
+local function depositCart()
+    API.logDebug('Inventory is full after using soilbox, trying to deposit: ' .. depositAttempt)
+    depositAttempt = depositAttempt + 1;
+    local cart = API.GetAllObjArrayInteract_str({ cartName }, 60, 0)
+    if #cart > 0 then
+        API.DoAction_Object_string1(0x29, API.OFF_ACT_GeneralObject_route0, { cartName },
+            60, true);
+        UTILS.randomSleep(800)
+        API.WaitUntilMovingEnds()
+        if not API.InvFull_() then
+            depositAttempt = 0
         end
     else
-        if not API.CheckAnim(100) then
-            print("Excavating " .. itemToGather)
-            API.DoAction_Object1(0x2, API.OFF_ACT_GeneralObject_route0, targetIds, 60);
+        API.logWarn('Didn\'t find: "' .. cartName .. '" within 60 tiles')
+    end
+end
+
+local function destroyArtifacts()
+    API.logWarn('destroy')
+    local inventory = API.ReadInvArrays33()
+
+    local items = UTILS.getDistinctByProperty(inventory, 'textitem')
+    for i = 1, #items, 1 do
+        local item = items[i]
+        if string.find(tostring(item.textitem), 'damaged') then
+            local count = API.InvItemcount_1(item.itemid1)
+            API.logWarn('Destroying ' ..  item.textitem)
+            -- API.DoAction_Inventory1(item.itemid1,0,3, API.OFF_ACT_GeneralInterface_route2)
+            API.DoAction_Interface(0x24,item.itemid1,8,item.id1,item.id2,item.id3,API.OFF_ACT_GeneralInterface_route2)
+            -- API.DoAction_Interface(0x24, item.itemid1, 8, 1473, 5, i - 1, API.OFF_ACT_GeneralInterface_route2)
+            UTILS.SleepUntil(destroyInterfaceFound,5,'Destroying ' ..  item.textitem)
+            if count > 1 then
+            API.DoAction_Interface(0xffffffff,0xffffffff,0,1183,7,-1,API.OFF_ACT_GeneralInterface_Choose_option)
+            else
+                API.DoAction_Interface(0xffffffff,0xffffffff,0,1183,5,-1,API.OFF_ACT_GeneralInterface_Choose_option)
+            end
+            UTILS.randomSleep(800)
         end
     end
-    UTILS.randomSleep(600)
 end
 
 local function dropSoil()
-    if soilBoxFull and API.InvItemcount_String(soil.label) > 0 then
-        print('Dropping soil')
-        API.KeyboardPress(soilKeybind, 100, 200)
+    if soilBoxFull then
+        local soilCount = API.InvItemcount_1(selectedTarget.SOIL.ID)
+        if soilCount > 0 then
+            API.logDebug('Dropping ' .. soilCount .. " soil")
+            for i = 1, soilCount, 1 do
+                API.KeyboardPress2(soilKeybind, 100, 200)
+                UTILS.rangeSleep(50, 10, 100)
+            end
+        end
+    end
+    UTILS.randomSleep(800)
+end
+
+local function bank()
+    API.logDebug('Going to bank')
+    API.DoAction_Object_string1(0x5, 80, { "Bank chest" }, 50, false)
+    UTILS.randomSleep(600 * 2)
+    API.WaitUntilMovingEnds()
+    if API.BankOpen2() then
+        API.KeyboardPress2(0x31, 100, 200)
+    end
+end
+
+local function goBack()
+    API.logDebug('Going back to digsite')
+end
+
+local function fillSoilbox()
+    if API.InvItemFound1(IDS.AUTOSCREENER) then
+        return
+    end
+    if API.InvItemFound1(IDS.SOILBOX) then
+        if API.VB_FindPSett(selectedTarget.SOIL.VB).SumOfstate == soilboxCapacity then
+            soilBoxFull = true
+        else
+            soilBoxFull = false
+            API.logDebug('Inventory is full, trying to fill soilbox')
+            API.KeyboardPress2(soilboxKeybind, 100, 200)
+            UTILS.randomSleep(600)
+        end
     end
 end
 
 local function inventoryCheck()
-    if depositAttempt > 1 then
-        print('Inventory still full after depositing 5 times')
-        API.Write_LoopyLoop(false)
-        return false;
+    if depositAttempt > 5 then
+        API.logError('Inventory still full after depositing 5 times')
+        runLoop = false
+        pauseExcavation()
+        return false
     end
-    if API.VB_FindPSett(soil.vb).SumOfstate == soilboxCapacity then
-        soilBoxFull = true;
-    else
-        soilBoxFull = false;
-    end
-    local emptySpots = API.Invfreecount_()
     if API.InvFull_() then
-        if not soilBoxFull then
-            print('Inventory is full, trying to fill soilbox')
-            API.KeyboardPress(soilboxKeybind, 100, 200)
-            UTILS.randomSleep(600)
+        local emptySpots = API.Invfreecount_()
+        fillSoilbox()
+        if shouldDestroy then
+            destroyArtifacts()
         end
         local spotsAfterFill = API.Invfreecount_()
         if spotsAfterFill <= emptySpots then
-            print('Inventory is full after using soilbox, trying to deposit')
-            local cart = API.GetAllObjArrayInteract_str({cartName}, 60, 0)
-            if #cart > 0 then
-                depositAttempt = depositAttempt + 1;
-                API.DoAction_Object_string1(0x29, API.OFF_ACT_GeneralObject_route0, {cartName}, 60, true);
-                UTILS.randomSleep(1200)
-                API.WaitUntilMovingEnds()
-                UTILS.randomSleep(600)
-                if not API.InvFull_() then
-                    depositAttempt = 0
-                end
+            depositCart()
+
+            if shouldBank then
+                bank()
+                goBack()
             end
         end
     end
 end
-local function setSpot()
-    print('setSpot')
-    local currentMob = itemToGather;
-    local selected = imguicombo.stringsArr[imguicombo.int_value + 1]
-    if currentMob ~= selected then
-        itemToGather = selected;
+
+local function followTimeSprite(objects)
+    local foundObjects = API.GetAllObjArray1(objects.IDS, 60, 0)
+    local targetIds = {}
+    for i = 1, #foundObjects do
+        local rock = foundObjects[i]
+        table.insert(targetIds, rock.Id)
     end
-    imguiCurrentTarget.colour = COLORS.TARGET_SET
-    setTargetBtn.return_click = false;
-end
-
-local function pauseExcavation()
-    runDigger = false
-    print("Excavation paused")
-    imguiEXCAVATE.return_click = false
-    imguiCurrentTarget.colour = COLORS.PAUSED
-    -- imguiRuntime.colour = COLORS.PAUSED
-    imguiEXCAVATE.box_name = "EXCAVATE"
-end
-
-local function startExcavation()
-    print("Excavation started")
-    runDigger = true;
-    imguiCurrentTarget.colour = COLORS.EXCAVATE
-    -- imguiRuntime.colour = COLORS.EXCAVATE
-    imguiEXCAVATE.box_name = "Pause"
+    local sprite = FindHl(targetIds, 60, { 7307 })
+    if not API.ReadPlayerMovin2() then
+        if sprite.Id ~= nil then
+            local spritePos = WPOINT.new(sprite.TileX / 512, sprite.TileY / 512, sprite.TileZ / 512)
+            local distanceF = API.Math_DistanceF(API.PlayerCoordfloat(), sprite.Tile_XYZ)
+            if distanceF > 2 then
+                UTILS.randomSleep(200)
+                if not API.CheckAnim(20) then
+                    API.logInfo("Excavating " .. target)
+                else
+                    API.logInfo("Sprite has moved, chasing it")
+                end
+                API.DoAction_Object2(0x2, API.OFF_ACT_GeneralObject_route0, { sprite.Id }, 60, spritePos)
+                UTILS.randomSleep(1000)
+                API.WaitUntilMovingEnds()
+                return
+            end
+        end
+        if artifactFoundInterfacePresent() then
+            artifactsFound = artifactsFound + 1
+            API.logInfo("Found artifact, excavating again " .. target)
+            API.DoAction_Object1(0x2, API.OFF_ACT_GeneralObject_route0, targetIds, 60)
+            UTILS.randomSleep(800)
+            return
+        end
+        if not API.CheckAnim(40) and not API.InvFull_() then
+            API.logInfo("Excavating " .. target)
+            API.DoAction_Object1(0x2, API.OFF_ACT_GeneralObject_route0, targetIds, 60)
+            UTILS.randomSleep(800)
+        end
+    end
 end
 
 local function drawGUI()
     if imguiTerminate.return_click then
         terminate()
     end
-    if imguiEXCAVATE.return_click then
-        if not runDigger then
+    if imguiExcavate.return_click then
+        if not runLoop then
             startExcavation()
         end
     else
-        if runDigger then
+        if runLoop then
             pauseExcavation()
         end
     end
@@ -357,34 +1011,72 @@ local function drawGUI()
         populateDropdown()
         getTargetBtn.return_click = false
     end
-    if not runDigger and setTargetBtn.return_click then
-        setSpot()
+    if not runLoop and setTargetBtn.return_click then
+        setHotspot()
     end
+    local destroyStatus = imguiDestroy.box_ticked
+    local bankStatus = imguiBank.box_ticked
+
+    if destroyStatus ~= shouldDestroy then
+        shouldDestroy = destroyStatus
+        API.logWarn('Destroying artifacts? : ' .. tostring(shouldDestroy))
+        imguiDestroy.tooltip_text = "Destroying: " .. tostring(shouldDestroy)
+    end
+
+    if bankStatus ~= shouldBank then
+        shouldBank = bankStatus
+        API.logWarn('Banking artifacts? : ' .. tostring(shouldBank))
+        imguiBank.tooltip_text = "Banking: " .. tostring(shouldBank)
+    end
+
     API.DrawSquareFilled(imguiBackground)
     API.DrawBox(setTargetBtn)
     API.DrawBox(getTargetBtn)
-    imguiCurrentTarget.string_value = "Current target:" .. itemToGather
-    -- imguiRuntime.string_value = formatElapsedTime(startTime) -- os.difftime(os.time(),startTime)
-    API.DrawBox(imguiEXCAVATE)
+    API.DrawCheckbox(imguiDestroy)
+    API.DrawCheckbox(imguiBank)
+    if (#targets > 0) then
+        API.DrawComboBox(imguicombo, false)
+    end
+    imguiCurrentTarget.string_value = "Current hotspot:" .. target
+    if runLoop then
+        imguiRuntime.string_value = formatElapsedTime(startTime) --os.difftime(os.time(),startTime)
+    end
+    API.DrawBox(imguiExcavate)
     API.DrawBox(imguiTerminate)
     API.DrawTextAt(imguiCurrentTarget)
-    -- API.DrawTextAt(imguiRuntime)
+    API.DrawTextAt(imguiRuntime)
 end
 
-populateDropdown()
+--#endregion
+
+--#region Main loop
 API.Write_LoopyLoop(true)
+populateDropdown()
 while (API.Read_LoopyLoop()) do ------------------------------------------------------
     API.DoRandomEvents()
     gameStateChecks()
+    idleCheck()
     drawGUI()
-    if runDigger then
-        followTimeSprite({itemToGather})
+    if runLoop and selectedTarget ~= nil then
         inventoryCheck()
         dropSoil()
+        followTimeSprite(selectedTarget)
     end
     UTILS.randomSleep(300)
 end ----------------------------------------------------------------------------------
-
+--#endregion
 ```
 
+</ContentBlock>
+
+
+:::hidden
+## Credits
+:::
+
+<ContentBlock title="Credits">
+- #### HigginsHax
+  - Contribution - ProgressBar to track XP and runtime
+- #### Grunstadt
+  - Contribution - Soilbox varbits
 </ContentBlock>

@@ -28,7 +28,7 @@ export default function Changelog(props) {
         },
       }}>
         {props.changes.map((change) => (
-          <TimelineItem>
+          <TimelineItem key={crypto.randomUUID()}>
             <TimelineOppositeContent>
               <h3 style={{marginTop:10}}>{change.date}</h3>
             </TimelineOppositeContent>
@@ -40,10 +40,10 @@ export default function Changelog(props) {
               <Paper sx={{ width: '100%', color:'#1a8870', borderRadius:6, borderTopRightRadius: 36, borderBottomRightRadius: 36 }} variant="outlined">
               <h3 style={{paddingLeft:16, paddingTop: 8}}>{change.title}</h3>
               <List>
-              {change.items.map((change) => (
+              {change.items.map((item) => (
                 <>
-                <ListItem style={{fontSize: 18}}>
-                  <LabelTwoToneIcon fontSize="medium" style={{marginRight:12, alignSelf:"flex-start"}}/>{change}
+                <ListItem key={crypto.randomUUID()} style={{fontSize: 18}}>
+                  <LabelTwoToneIcon fontSize="medium" style={{marginRight:12, alignSelf:"flex-start"}}/>{item}
                 </ListItem>
                 </>
               ))}

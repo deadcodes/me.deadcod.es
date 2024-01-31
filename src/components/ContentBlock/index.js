@@ -14,7 +14,7 @@ export default function ContentBlock(props) {
   const maxRadius = 80;
   const radiusToSet = height > maxRadius ? maxRadius : height * 0.5;
   const stylesObj = {
-    color: "#1a8870",
+    color: "var(--ifm-color-primary-darker)",
     backgroundColor: "#201b23",
     padding: 12,
     height: "auto",

@@ -6,6 +6,7 @@ let theme = prismThemes.vsDark;
 theme.plain.background = '#201b23';
 
 const config: Config = {
+  
   title: 'Dead Codes',
   tagline: '',
   favicon: 'img/favicon.ico',
@@ -37,16 +38,16 @@ const config: Config = {
       'classic',
       {
         docs: {
-          sidebarPath: './sidebars.ts',
+                    sidebarPath: './sidebars.ts',
           admonitions: {
             keywords: ['hidden'],
             extendDefaults: true,
           },
         },
-        blog: {
-          routeBasePath: '/guides',
-          showReadingTime: true,
-        },
+// blog: {
+//           routeBasePath: '/guides',
+//           showReadingTime: true,
+//         },
         theme: {
           customCss: ['./src/css/custom.css'],
         },
@@ -79,13 +80,31 @@ const config: Config = {
         src: 'img/logo-min.svg',
       },
       items: [
+        // {
+        //   type: 'docSidebar',
+        //   sidebarId: 'mainSidebar',
+        //   position: 'left',
+        //   label: 'Scripts',
+        // },
         {
           type: 'docSidebar',
-          sidebarId: 'mainSidebar',
+          sidebarId: 'kbSidebar',
           position: 'left',
           label: 'Scripts',
         },
-        {to: '/guides', label: 'Guides', position: 'left'},
+        {
+          type: 'docSidebar',
+          sidebarId: 'libSidebar',
+          position: 'left',
+          label: 'Libraries',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'guideSidebar',
+          position: 'left',
+          label: 'Guides',
+        },
+        // {to: '/guides', label: 'Guides', position: 'left'},
         {
           href: 'https://github.com/deadcodes/MEScripts',
           label: 'GitHub',
@@ -103,7 +122,7 @@ const config: Config = {
       ],
     },
     prism: {
-      additionalLanguages: ['lua'],
+      additionalLanguages: ['lua','diff'],
       theme: prismThemes.github,
       darkTheme: theme,
     },
