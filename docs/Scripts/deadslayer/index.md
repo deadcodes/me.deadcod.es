@@ -11,7 +11,7 @@ import Changelog from '@site/src/components/Changelog';
 import BrowserWindow from '@site/src/components/BrowserWindow';
 import changes from './changes.json'
 
-<TopBanner title="Dead Slayer" version="2023.09">
+<TopBanner title="Dead Slayer" version="2023.09" skill="Slayer">
 </TopBanner>
 
 :::hidden

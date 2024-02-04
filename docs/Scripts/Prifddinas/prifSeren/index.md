@@ -1,5 +1,5 @@
 ---
-title: Prifddinas Seren Stone Miner
+title: Seren Stone Miner
 description: Mines Seren Stones in Prifddinas
 slug: /dead-prif-seren-miner
 ---
@@ -11,7 +11,7 @@ import Changelog from '@site/src/components/Changelog';
 import BrowserWindow from '@site/src/components/BrowserWindow';
 import changes from './changes.json'
 
-<TopBanner title="Prifddinas Seren Stone Miner" version="2023.08.30">
+<TopBanner title="Seren Stone Miner" version="2024.02.01" skill="Mining">
 </TopBanner>
 
 :::hidden
@@ -29,7 +29,7 @@ import changes from './changes.json'
 
 <ContentBlock title="Features">
 
-- Automatically teleports to Prifddinas lodestone if too far away using lodestones.lua.
+- Automatically teleports to Prifddinas lodestone if too far away using `lodestones.lua`.
 - Handles random events.
   
 ```diff
@@ -55,8 +55,16 @@ import changes from './changes.json'
 <ContentBlock title="Code">
 
 ```lua showLineNumbers
+--[[
+# Script Name:   Dead's Prifddinas Seren Stone Miner
+# Description:  <Mines Seren Stones at Prifddinas.>
+# Autor:        <Dead (dea.d - Discord)>
+# Version:      <2.0>
+# Datum:        <2024.02.01>
+--]]
 
 print("Run Priff Seren Stones Miner.")
+local version = "2.0"
 
 --#region INCLUDES
 local API = require("api")
@@ -64,13 +72,14 @@ local LODESTONES = require("lodestones")
 local UTILS = require("utils")
 --#endregion
 
+API.SetDrawTrackedSkills(true)
+API.SetDrawLogs(true)
+
 --#region VARIABLES
 local startXP = API.GetSkillXP("MINING");
 local stateXp = startXP;
 local forceMine = false;
 local noXpGainTick = 0;
-local idleCheckStartTime = os.time()
-local idleTimeThreshold = math.random(220, 260)
 
 -- The X1,X2,Y1,Y2 coords of the rectangle that we consider to be the area in which stones are interactable.
 local miningArea = { 2206, 2247, 3208, 3322 }
@@ -85,17 +94,15 @@ local STATES = {
 }
 -- Draws the black background
 local imguiBackground = API.CreateIG_answer();
-imguiBackground.box_name = "imguiBackground";
-imguiBackground.box_start = FFPOINT.new(14, 20, 0);
-imguiBackground.box_size = FFPOINT.new(200, 60, 0)
-imguiBackground.colour = ImColor.new(20, 20, 20);
+imguiBackground.box_name = "ImguiBackground"
+imguiBackground.box_start = FFPOINT.new(20, 40, 0)
+imguiBackground.box_size = FFPOINT.new(220, 80, 0)
+imguiBackground.colour = ImColor.new(10, 13, 29)
 
--- imgui object for runtime
-local imguiXPEarned = API.CreateIG_answer();
-imguiXPEarned.box_name = "imguiXPEarned";
-imguiXPEarned.box_start = FFPOINT.new(20, 22, 0);
-imguiXPEarned.colour = ImColor.new(255, 255, 255);
-
+local ImGuiTitle = API.CreateIG_answer()
+ImGuiTitle.box_start = FFPOINT.new(25, 45, 0)
+ImGuiTitle.colour = ImColor.new(37,194,160)
+ImGuiTitle.string_value = "Dead's Prif Seren Miner " .. version
 --#endregion
 
 --#region METHODS
@@ -103,9 +110,9 @@ imguiXPEarned.colour = ImColor.new(255, 255, 255);
 -- Draws the imgui objects to the screen
 local function drawMetrics()
     local xpGained = API.GetSkillXP("MINING") - stateXp;
-    imguiXPEarned.string_value = "XP Earned:   " .. API.GetSkillXP("MINING") - startXP
     API.DrawSquareFilled(imguiBackground)
-    API.DrawTextAt(imguiXPEarned)
+    ImGuiTitle.string_value = "Dead's Prif Seren Miner " .. version .. "\n" .. API.ScriptRuntimeString()
+    API.DrawTextAt(ImGuiTitle)
     if xpGained > 0 then
         stateXp = stateXp + xpGained;
         noXpGainTick = 0;
@@ -114,37 +121,11 @@ local function drawMetrics()
     end
 end
 
--- Does API.PIdle2
-local function antiIdleTask()
-    local currentTime = os.time()
-    local elapsedTime = os.difftime(currentTime, idleCheckStartTime)
-
-    if elapsedTime >= idleTimeThreshold then
-        API.PIdle2()
-        -- Reset the timer and generate a new random idle time
-        idleCheckStartTime = os.time()
-        math.randomseed(idleCheckStartTime)
-        idleTimeThreshold = math.random(220, 260)
-        print("Reset Timer & Threshhold")
-        return true
-    else
-        return false
-    end
-end
 
 local function gameStateChecks()
-    local gameState = API.GetGameState()
-    if (gameState ~= 3) then
-        print('Not ingame with state:', gameState)
-        API.Write_LoopyLoop(false)
-        return
-    end
-    if not API.PlayerLoggedIn() then
-        print('Not Logged In')
-        API.Write_LoopyLoop(false)
-        return;
-    end
+    UTILS.gameStateChecks()
     if noXpGainTick > 30 then
+        API.logError('Not gaining xp, exiting')
         print('Not gaining xp')
         API.Write_LoopyLoop(false)
     end
@@ -159,7 +140,7 @@ local function onStart()
         STATE = STATES.GOTO_PRIFF
     else
         print('Already near PRIFDDINAS lodestone')
-        STATE = STATES. GOTO_STONES
+        STATE = STATES.GOTO_STONES
     end
 end
 
@@ -182,6 +163,7 @@ local function mineStones()
         API.WaitUntilMovingEnds()
     else
         if forceMine then
+            API.logInfo('Force Mine')
             API.DoAction_Object_string1(0x3a, API.OFF_ACT_GeneralObject_route0, { "Seren stone" }, 50, true)
             UTILS.randomSleep(600)
             forceMine = false
@@ -191,9 +173,9 @@ end
 
 local function priffSerenMiner()
     gameStateChecks()
-    if antiIdleTask() then forceMine = true end
     drawMetrics()
     API.DoRandomEvents()
+    if UTILS:antiIdle() then forceMine = true end
     if STATE == STATES.GOTO_PRIFF then
         gotoPriff()
     elseif STATE == STATES.GOTO_STONES then
@@ -208,12 +190,13 @@ end
 
 -- Main Loop
 API.Write_LoopyLoop(true)
-print("Dead's Priff Seren Stones Started!")
+API.logWarn("Dead's Priff Seren Stones Started!")
 onStart()
 while API.Read_LoopyLoop() do
     priffSerenMiner()
 end
-
+API.logWarn("Dead's Priff Seren Stones Done!")
+API.SetDrawTrackedSkills(false)
 ```
 
 </ContentBlock>

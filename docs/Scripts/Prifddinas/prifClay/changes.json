@@ -1,0 +1,17 @@
+[
+    {
+        "date": "2024-02-01",
+        "title": "Update 2.0",
+        "items": [
+            "Now uses the updated UTIL functions",
+            "Code cleanup"
+        ]
+    },
+    {
+        "date": "2023-08-28",
+        "title": "Release",
+        "items": [
+            "Release"
+        ]
+    }
+]

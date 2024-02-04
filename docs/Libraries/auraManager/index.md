@@ -11,7 +11,7 @@ import Changelog from '@site/src/components/Changelog';
 import BrowserWindow from '@site/src/components/BrowserWindow';
 import changes from './changes.json'
 
-<TopBanner title="Dead Auras" version="2024.01">
+<TopBanner title="Dead Auras" version="2024.01" skill="Aura">
 </TopBanner>
 
 :::hidden
