@@ -1,12 +1,12 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 let theme = prismThemes.vsDark;
 theme.plain.background = '#201b23';
 
 const config: Config = {
-  
+
   title: 'Dead Codes',
   tagline: '',
   favicon: 'img/favicon.ico',
@@ -32,22 +32,24 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-  plugins: ["docusaurus-plugin-less","docusaurus-lunr-search"],
+  plugins: ["docusaurus-plugin-less", require.resolve("@cmfcmf/docusaurus-search-local")],
   presets: [
     [
       'classic',
       {
         docs: {
-                    sidebarPath: './sidebars.ts',
+          routeBasePath: '/',
+          sidebarPath: './sidebars.ts',
           admonitions: {
             keywords: ['hidden'],
             extendDefaults: true,
           },
         },
-// blog: {
-//           routeBasePath: '/guides',
-//           showReadingTime: true,
-//         },
+        blog: false,
+        // blog: {
+        //           routeBasePath: '/guides',
+        //           showReadingTime: true,
+        //         },
         theme: {
           customCss: ['./src/css/custom.css'],
         },
@@ -56,7 +58,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    docs:{
+    docs: {
       sidebar: {
         hideable: true,
         autoCollapseCategories: true,
@@ -122,7 +124,7 @@ const config: Config = {
       ],
     },
     prism: {
-      additionalLanguages: ['lua','diff'],
+      additionalLanguages: ['lua', 'diff'],
       theme: prismThemes.github,
       darkTheme: theme,
     },
