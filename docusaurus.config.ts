@@ -32,7 +32,7 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-  plugins: ["docusaurus-plugin-less", require.resolve("@cmfcmf/docusaurus-search-local")],
+  plugins: ["docusaurus-plugin-less", [require.resolve("@cmfcmf/docusaurus-search-local"),{indexBlog: false }]],
   presets: [
     [
       'classic',
