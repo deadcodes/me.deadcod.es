@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdeadcodes=self.webpackChunkdeadcodes||[]).push([[913],{7664:e=>{e.exports=JSON.parse('{"title":"Scripts","slug":"/category/scripts","permalink":"/docs/category/scripts","navigation":{"next":{"title":"Soft Clay Miner","permalink":"/docs/dead-prif-clay-miner"}}}')}}]);
