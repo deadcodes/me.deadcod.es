@@ -20,8 +20,8 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'deadcodes', // Usually your GitHub org/user name.
-  projectName: 'MEScripts', // Usually your repo name.
-
+  projectName: 'me.deadcod.es', // Usually your repo name.
+  trailingSlash: false,
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 

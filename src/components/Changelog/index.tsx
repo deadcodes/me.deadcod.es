@@ -28,7 +28,7 @@ export default function Changelog(props) {
         },
       }}>
         {props.changes.map((change) => (
-          <TimelineItem key={crypto.randomUUID()}>
+          <TimelineItem>
             <TimelineOppositeContent>
               <h3 style={{marginTop:10}}>{change.date}</h3>
             </TimelineOppositeContent>
@@ -42,7 +42,7 @@ export default function Changelog(props) {
               <List>
               {change.items.map((item) => (
                 <>
-                <ListItem key={crypto.randomUUID()} style={{fontSize: 18}}>
+                <ListItem style={{fontSize: 18}}>
                   <LabelTwoToneIcon fontSize="medium" style={{marginRight:12, alignSelf:"flex-start"}}/>{item}
                 </ListItem>
                 </>
