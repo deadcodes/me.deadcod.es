@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdeadcodes=self.webpackChunkdeadcodes||[]).push([[359],{3972:e=>{e.exports=JSON.parse('{"title":"Guides","slug":"/category/guides","permalink":"/me.deadcod.es/category/guides","navigation":{"next":{"title":"Interfaces","permalink":"/me.deadcod.es/Guides/ME/interfaces"}}}')}}]);
