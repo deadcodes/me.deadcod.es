@@ -43,7 +43,7 @@ export default function TopBanner(props) {
             <h1
               style={{
                 fontSize: 84,
-                fontFamily: "Regular",
+                fontFamily: "Monoton",
                 fontWeight: 100,
                 fontVariant: "small-caps",
                 letterSpacing: 4,
@@ -58,7 +58,7 @@ export default function TopBanner(props) {
           className="revision"
             style={{
               fontSize: 24,
-              fontFamily: "Regular",
+              fontFamily: "Monoton",
               fontWeight: 100,
               letterSpacing: 4,
             }}

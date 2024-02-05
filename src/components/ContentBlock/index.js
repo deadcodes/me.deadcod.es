@@ -32,7 +32,7 @@ export default function ContentBlock(props) {
         <h1
           style={{
             // fontSize: 64,
-            fontFamily: "Regular",
+            fontFamily: "Monoton",
             fontWeight: 100,
             fontVariant: "small-caps",
             letterSpacing: 4,

@@ -3,7 +3,8 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 let theme = prismThemes.vsDark;
-theme.plain.background = '#201b23';
+theme.plain.backgroundColor = '#201b23';
+// theme.plain.background = '#201b23';
 
 const config: Config = {
 
@@ -32,7 +33,7 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-  plugins: ["docusaurus-plugin-less", [require.resolve("@cmfcmf/docusaurus-search-local"),{indexBlog: false }]],
+  plugins: ["docusaurus-plugin-less"],
   presets: [
     [
       'classic',
@@ -57,6 +58,24 @@ const config: Config = {
     ],
   ],
 
+  themes: [
+    // ... Your other themes.
+    [
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
+      ({
+        // ... Your options.
+        // `hashed` is recommended as long-term-cache of index file is possible.
+        hashed: true,
+        indexBlog: false,
+        docsRouteBasePath: "/",
+        // For Docs using Chinese, The `language` is recommended to set to:
+        // ```
+        // language: ["en", "zh"],
+        // ```
+      }),
+    ],
+  ],
   themeConfig: {
     docs: {
       sidebar: {
@@ -82,12 +101,6 @@ const config: Config = {
         src: 'img/logo-min.svg',
       },
       items: [
-        // {
-        //   type: 'docSidebar',
-        //   sidebarId: 'mainSidebar',
-        //   position: 'left',
-        //   label: 'Scripts',
-        // },
         {
           type: 'docSidebar',
           sidebarId: 'kbSidebar',
@@ -106,12 +119,11 @@ const config: Config = {
           position: 'left',
           label: 'Guides',
         },
-        // {to: '/guides', label: 'Guides', position: 'left'},
         {
-          href: 'https://github.com/deadcodes/MEScripts',
-          label: 'GitHub',
-          position: 'right',
-        },
+          label: 'Commissions',
+          href: 'https://ko-fi.com/deadcodes/commissions',
+          position: 'right'
+        }
       ],
     },
     footer: {

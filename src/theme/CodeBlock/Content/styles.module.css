@@ -20,8 +20,12 @@
 
   pre {
     padding: unset;
+    margin-right: 32px !important;
     padding-top: var(--ifm-pre-padding);
+    --ifm-pre-background: none !important;
+    background-color: var(--ifm-background-surface-color) !important;
   }
+  
 .codeBlock {
   --ifm-pre-background: var(--ifm-background-surface-color);
   margin: 0;

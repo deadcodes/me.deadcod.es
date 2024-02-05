@@ -21,9 +21,3 @@
   align-items: center;
   justify-content: center;
 }
-
-@font-face {
-  font-family: "Regular";   /*Can be any text*/
-  src: local("Monoton"),
-    url("../fonts/Monoton-Regular.ttf") format("truetype");
-}
