@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdeadcodes=self.webpackChunkdeadcodes||[]).push([[192],{9520:e=>{e.exports=JSON.parse('{"title":"Guides","slug":"/category/guides","permalink":"/category/guides","navigation":{"next":{"title":"Getting Started","permalink":"/Guides/ME/01gettingStarted"}}}')}}]);
