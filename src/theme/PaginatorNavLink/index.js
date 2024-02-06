@@ -1,14 +1,12 @@
 import React from "react";
 import clsx from "clsx";
-import { useRef, useLayoutEffect, useEffect, useState } from "react";
+import { useRef, useLayoutEffect, useState } from "react";
 import Link from "@docusaurus/Link";
 export default function PaginatorNavLink(props) {
   const ref = useRef(null);
-  const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
 
   useLayoutEffect(() => {
-    setWidth(ref.current.offsetWidth);
     setHeight(ref.current.offsetHeight);
   }, []);
 

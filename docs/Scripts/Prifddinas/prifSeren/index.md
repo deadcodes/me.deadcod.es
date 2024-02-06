@@ -19,7 +19,7 @@ import changes from './changes.json'
 :::
 <ContentBlock title="Requirements">
 
-- [**Plague's End**](https://runescape.wiki/w/Plague%27s_End) completed to access Prifddinas
+- <u>[**Plague's End**](https://runescape.wiki/w/Plague%27s_End)</u> completed to access Prifddinas
 
 </ContentBlock>
 

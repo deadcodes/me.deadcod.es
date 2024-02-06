@@ -1,6 +1,5 @@
-import React, {type CSSProperties, type ReactNode} from 'react';
+import React, {type CSSProperties, type ReactNode, useRef, useLayoutEffect, useState} from 'react';
 import clsx from 'clsx';
-
 import styles from './styles.module.css';
 
 interface Props {
@@ -18,8 +17,9 @@ export default function BrowserWindow({
   style,
   bodyStyle,
 }: Props): JSX.Element {
+  let classCombo = styles.browserWindow.concat(' shadow--tl')
   return (
-    <div className='shadow--tl' style={{borderRadius:'var(--ifm-global-radius)'}}>
+    <div style={{borderRadius:'var(--ifm-global-radius)'}}>
     <div className={styles.browserWindow} style={{...style, minHeight}}>
       <div className={styles.browserWindowHeader}>
         <div className={styles.buttons}>

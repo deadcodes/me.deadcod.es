@@ -31,6 +31,7 @@ import changes from './changes.json';
 - AutoScreener / Soilbox has to be present in inventory
 - Soildbox has to be on the action bar slot with a keybind configured
 - The soil for the location you're at should be on the action bar slot with a keybind configured
+    - Follow <u>[**this link**](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)</u> to find keycodes 
 - Steps mentioned in the Configuration section have to be followed for proper functionality of the following
     - Depositing materials
     - Banking artifacts
@@ -97,6 +98,16 @@ end
 <ContentBlock title="Code">
 
 ```lua showLineNumbers
+--[[
+# Script Name:   DeadDigger™
+# Description:  <Digger Helper>
+# Autor:        <Dead (dea.d - Discord)>
+# Version:      <3.0>
+# Datum:        <2024.02.01>
+--]]
+
+local version = "2.0"
+print("Run DeadDigger " .. version)
 local API = require("api")
 local UTILS = require("utils")
 
@@ -105,13 +116,13 @@ API.SetDrawTrackedSkills(true)
 
 --#region User Inputs
 -- highlight-next-line
-local cartName = "Material storage container"               -- name of the object to deposit materials
+local cartName = "Materials cart"               -- name of the object to deposit materials
 
 --highlight-start
 --https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 local soilboxKeybind = 0x6D                                 -- keybind of the soilbox on actionbar
-local soilKeybind = 0x6B                                    -- keybind of the soil on actionbar
-local soilboxCapacity = 100                                 -- capacity of the soilbox. Increase can be purchased
+local soilKeybind = 0xBB                                    -- keybind of the soil on actionbar
+local soilboxCapacity = 50                                 -- capacity of the soilbox. Increase can be purchased
 --highlight-end
 --#endregion
 
@@ -886,14 +897,12 @@ local function destroyArtifacts()
 end
 
 local function dropSoil()
-    if soilBoxFull then
-        local soilCount = API.InvItemcount_1(selectedTarget.SOIL.ID)
-        if soilCount > 0 then
-            API.logDebug('Dropping ' .. soilCount .. " soil")
-            for i = 1, soilCount, 1 do
-                API.KeyboardPress2(soilKeybind, 100, 200)
-                UTILS.rangeSleep(50, 10, 100)
-            end
+    local soilCount = API.InvItemcount_1(selectedTarget.SOIL.ID)
+    if soilCount > 0 then
+        API.logDebug('Dropping ' .. soilCount .. " soil")
+        for i = 1, soilCount, 1 do
+            API.KeyboardPress2(soilKeybind, 100, 200)
+            UTILS.rangeSleep(50, 10, 100)
         end
     end
     UTILS.randomSleep(800)
@@ -917,7 +926,8 @@ local function fillSoilbox()
     if API.InvItemFound1(IDS.AUTOSCREENER) then
         return
     end
-    if API.InvItemFound1(IDS.SOILBOX) then
+    if API.InvItemFound1(IDS.SOILBOX) and not soilBoxFull then
+        API.logDebug('found soilbox')
         if API.VB_FindPSett(selectedTarget.SOIL.VB).SumOfstate == soilboxCapacity then
             soilBoxFull = true
         else
@@ -926,6 +936,8 @@ local function fillSoilbox()
             API.KeyboardPress2(soilboxKeybind, 100, 200)
             UTILS.randomSleep(600)
         end
+    else
+        API.logDebug('no soilbox')
     end
 end
 
@@ -939,6 +951,7 @@ local function inventoryCheck()
     if API.InvFull_() then
         local emptySpots = API.Invfreecount_()
         fillSoilbox()
+        dropSoil()
         if shouldDestroy then
             destroyArtifacts()
         end
@@ -1039,7 +1052,7 @@ local function drawGUI()
     end
     imguiCurrentTarget.string_value = "Current hotspot:" .. target
     if runLoop then
-        imguiRuntime.string_value = formatElapsedTime(startTime) --os.difftime(os.time(),startTime)
+        imguiRuntime.string_value = formatElapsedTime(startTime)
     end
     API.DrawBox(imguiExcavate)
     API.DrawBox(imguiTerminate)
@@ -1050,6 +1063,7 @@ end
 --#endregion
 
 --#region Main loop
+API.logWarn('Started DeadDigger ' .. version)
 API.Write_LoopyLoop(true)
 populateDropdown()
 while (API.Read_LoopyLoop()) do ------------------------------------------------------
@@ -1059,14 +1073,13 @@ while (API.Read_LoopyLoop()) do ------------------------------------------------
     drawGUI()
     if runLoop and selectedTarget ~= nil then
         inventoryCheck()
-        dropSoil()
         followTimeSprite(selectedTarget)
     end
     UTILS.randomSleep(300)
 end ----------------------------------------------------------------------------------
+API.logWarn('Stopped DeadDigger ' .. version)
 --#endregion
 ```
-
 </ContentBlock>
 
 

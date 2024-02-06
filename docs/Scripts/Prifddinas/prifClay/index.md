@@ -19,7 +19,7 @@ import changes from './changes.json'
 :::
 <ContentBlock title="Requirements">
 
-- [**Plague's End**](https://runescape.wiki/w/Plague%27s_End) completed to access Prifddinas
+- <u>[**Plague's End**](https://runescape.wiki/w/Plague%27s_End)</u> completed to access Prifddinas
 
 </ContentBlock>
 
@@ -48,7 +48,7 @@ import changes from './changes.json'
 <ContentBlock title="Configuration">
 Set the keycode of the bank preset you want to use [**bankPresetKeycode**].
 
-> Follow **[this link](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)** to find keycodes 
+> Follow <u>[**this link**](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)</u> to find keycodes 
 </ContentBlock>
 :::hidden
 ## Changelog
