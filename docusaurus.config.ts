@@ -89,7 +89,7 @@ scripts:[
     // Replace with your project's social card
     colorMode: {
       defaultMode: 'dark',
-      disableSwitch: false,
+      disableSwitch: true,
     },
     tableOfContents: {
       minHeadingLevel: 2,
