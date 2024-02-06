@@ -89,13 +89,13 @@ scripts:[
     // Replace with your project's social card
     colorMode: {
       defaultMode: 'dark',
-      disableSwitch: true,
+      disableSwitch: false,
     },
     tableOfContents: {
       minHeadingLevel: 2,
       maxHeadingLevel: 5,
     },
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/logo-min.png',
     navbar: {
       hideOnScroll: true,
       title: 'Dead Codes',
