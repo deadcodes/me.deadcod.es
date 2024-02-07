@@ -44,10 +44,8 @@ scripts:[
       {
         gtag: {
           trackingID: 'G-YM97NPBVRX',
-          anonymizeIP: true,
+          anonymizeIP: false,
         },
-      },
-      {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
