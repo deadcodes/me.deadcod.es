@@ -1,5 +1,10 @@
 [
     {
+        "date":"2024-02-29",
+        "title":"Update [1.1]",
+        "items":["Updated to ME 1.77"]
+    },
+    {
         "date":"2024-01-20",
         "title":"Release [1.0]",
         "items":["Release"]

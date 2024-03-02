@@ -133,10 +133,10 @@ ITEMS.CHARMS = {
     12161 -- abyssal
 }
 
-print("Run DeadSlayer.")
 local API = require("api")
 local UTILS = require("utils")
-
+local version = "1.2"
+print("Run DeadSlayer: " .. version)
 --highlight-start
 local buryBones = true                                     --Set this to true to bury bones that you pickup
 local bonesId = ITEMS.BONES                                --IDS of the bones to bury
@@ -251,7 +251,7 @@ local function formatElapsedTime(start)
 end
 
 local function gameStateChecks()
-    local gameState = API.GetGameState()
+    local gameState = API.GetGameState2()
     if (gameState ~= 3) then
         API.log('Not ingame with state:', gameState)
         API.Write_LoopyLoop(false)
@@ -274,7 +274,7 @@ end
 -- #region UI render functions
 local function populateDropdown()
     log('populateDropdown')
-    local allNPCS = API.ReadAllObjectsArray(false, 1)
+    local allNPCS = API.ReadAllObjectsArray({1},{-1},{})
     local mobs = {}
     if #allNPCS > 0 then
         for _, a in pairs(allNPCS) do
@@ -464,7 +464,7 @@ local function KillMob(name)
             targetNotFoundCount = 0
             -- end
         else
-            local targets = API.GetAllObjArrayInteract_str({name}, 30, 1)
+            local targets = API.GetAllObjArrayInteract_str({name}, 30, {1})
             if #targets > 0 then
                 table.sort(targets, function(k1, k2)
                     return k1.Distance < k2.Distance

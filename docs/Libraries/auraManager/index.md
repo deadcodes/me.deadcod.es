@@ -100,17 +100,6 @@ local function waitUntil(x, timeout)
     return start + timeout > os.time()
 end
 
-local function isInterfaceVisible(interface, nested)
-    local inter = API.ScanForInterfaceTest2Get(nested, interface)
-    if (#inter > 0 ) then
-        print('visible', inter[1].textids)
-        if inter[1].x > 0 then
-            return true
-        end
-    end
-    return false
-end
-
 local function getInterfaceText(interface, nested)
     local inter = API.ScanForInterfaceTest2Get(nested, interface)
     if (#inter > 0) then
@@ -124,24 +113,7 @@ local function getButtonText()
     return getInterfaceText(buttonTextInterface, false)
 end
 
-
-local function canUseAura()
-    -- select the aura here
-    local status = getInterfaceText(auraStatusTextInterface, false)
-    local inter = API.ScanForInterfaceTest2Get(false, auraStatusTextInterface)
-    if (#inter > 0) then
-        local status = inter[1].textids
-        if (string.len(status) > 0) and doesStringInclude(status, CONSTANTS.READY) then
-            return true
-        else
-            return false
-        end
-    else
-        return false
-    end
-end
-
-local function isAuraInterfaceOpen()
+function AURAS.isAuraInterfaceOpen()
     local inter = API.ScanForInterfaceTest2Get(false, auraTitleInterface)
     if (#inter > 0) then
         local status = inter[1].textids
@@ -156,7 +128,7 @@ local function isAuraInterfaceOpen()
 end
 
 function AURAS.openAuraInterface()
-    if isAuraInterfaceOpen() then
+    if AURAS.isAuraInterfaceOpen() then
         return
     end
     local auraEquipped = AURAS.isAuraEquipped()
@@ -180,20 +152,38 @@ local function openEquipmentInterface()
 end
 
 local function isEquipmentInterfaceOpen()
-    return API.VB_FindPSett(3074).SumOfstate == 1
+    return API.VB_FindPSettinOrder(3074,1).state == 1
 end
 
 function AURAS.isAuraEquipped()
     local equipmentOpen = isEquipmentInterfaceOpen()
     if not equipmentOpen then
         openEquipmentInterface()
+        API.RandomSleep2(50,0,0)
     end
     local equipped = false
     if API.GetEquipSlot(11).itemid1 == -1 then equipped = false else equipped = true end
     if not equipmentOpen then
         openEquipmentInterface()
+        API.RandomSleep2(50,0,0)
     end
     return equipped
+end
+
+function AURAS.canUseAura()
+
+    local statusText = getInterfaceText(auraStatusTextInterface, false)
+    local inter = API.ScanForInterfaceTest2Get(false, auraStatusTextInterface)
+    if (#inter > 0) then
+        local status = inter[1].textids
+        if (string.len(status) > 0) and doesStringInclude(status, CONSTANTS.READY) then
+            return true
+        else
+            return false
+        end
+    else
+        return false
+    end
 end
 
 local function selectAura(auraIds, force)
@@ -211,7 +201,7 @@ local function selectAura(auraIds, force)
             print('aura already active')
             break
         end
-        if (canUseAura()) then
+        if (AURAS.canUseAura()) then
             if doesStringInclude(btnText, CONSTANTS.BUTTON_ACTIVATE) then
                 API.DoAction_Interface(0x24, 0xffffffff, 1, 1929, 16, -1, API.OFF_ACT_GeneralInterface_route)
                 API.RandomSleep2(1200, 100, 300)
@@ -232,17 +222,19 @@ local function selectAura(auraIds, force)
 end
 
 local function activateAura(auraIds, force)
-    local auraInterfaceOpened = isAuraInterfaceOpen()
+    if AURAS.isAuraEquipped() and not force then print('already have aura and no force') return end
+    local auraInterfaceOpened = AURAS.isAuraInterfaceOpen()
     if not auraInterfaceOpened then
         AURAS.openAuraInterface()
     end
-    if not waitUntil(isAuraInterfaceOpen, 10) then
+    if not waitUntil(AURAS.isAuraInterfaceOpen, 10) then
         print('Aura interface wasnt open after 10 seconds, exiting')
         return
     end
     selectAura(auraIds, force)
+
     if not auraInterfaceOpened then
-        AURAS.openAuraInterface()
+        AURAS.closeAuraInterface()
     end
 end
 

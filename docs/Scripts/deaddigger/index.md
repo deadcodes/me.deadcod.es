@@ -11,7 +11,7 @@ import Changelog from '@site/src/components/Changelog';
 import BrowserWindow from '@site/src/components/BrowserWindow';
 import changes from './changes.json';
 
-<TopBanner title="Dead Digger" version="2024.01" skill="Archaeology">
+<TopBanner title="Dead Digger" version="2024.03" skill="Archaeology">
 </TopBanner>
 
 :::hidden
@@ -29,10 +29,13 @@ import changes from './changes.json';
 <ContentBlock title="Requirements">
 
 - AutoScreener / Soilbox has to be present in inventory
-- Soildbox has to be on the action bar slot with a keybind configured
-- The soil for the location you're at should be on the action bar slot with a keybind configured
-    - Follow <u>[**this link**](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)</u> to find keycodes 
-- Steps mentioned in the Configuration section have to be followed for proper functionality of the following
+- Soilbox has to be on the action bar slot
+- The soil for the location you're at should be on the action bar slot
+    -  It is recommended to have an action setup as show below to cover all digsites
+<BrowserWindow url="Recommended Actionbar">
+![Recommended Bar](recommended_bar.png)
+</BrowserWindow>
+- Steps mentioned in the Configuration section have to be followed for proper functionality of the following:
     - Depositing materials
     - Banking artifacts
 </ContentBlock>
@@ -49,7 +52,7 @@ The following three methods have to be configured by you based on the digsite.
 
 The following function has to be configured based on the excavation site you're at.
 
-```lua
+```lua showLineNumbers
 -- This function handles depositing
 local function depositCart()
     API.logDebug('Inventory is full after using soilbox, trying to deposit: ' .. depositAttempt)
@@ -73,8 +76,7 @@ end
 
 This function handles banking when `Bank Artifacts` is selected.
 
-```lua
-
+```lua showLineNumbers
 local function bank()
     API.logDebug('Going to bank')
 end
@@ -82,8 +84,7 @@ end
 
 Once you're done banking, you'd have to traverse back to the digsite, which is handled by the below function.
 
-```lua
-
+```lua showLineNumbers
 local function goBack()
     API.logDebug('Going back to digsite')
 end
@@ -102,11 +103,11 @@ end
 # Script Name:   DeadDigger™
 # Description:  <Digger Helper>
 # Autor:        <Dead (dea.d - Discord)>
-# Version:      <3.0>
-# Datum:        <2024.02.01>
+# Version:      <3.2>
+# Datum:        <2024.02.29>
 --]]
 
-local version = "2.0"
+local version = "3.2"
 print("Run DeadDigger " .. version)
 local API = require("api")
 local UTILS = require("utils")
@@ -116,13 +117,10 @@ API.SetDrawTrackedSkills(true)
 
 --#region User Inputs
 -- highlight-next-line
-local cartName = "Materials cart"               -- name of the object to deposit materials
+local cartName = "Materials cart" -- name of the object to deposit materials
 
 --highlight-start
---https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-local soilboxKeybind = 0x6D                                 -- keybind of the soilbox on actionbar
-local soilKeybind = 0xBB                                    -- keybind of the soil on actionbar
-local soilboxCapacity = 50                                 -- capacity of the soilbox. Increase can be purchased
+local soilboxCapacity = 100 -- capacity of the soilbox. Increase can be purchased
 --highlight-end
 --#endregion
 
@@ -184,8 +182,10 @@ imguiBank.box_start = FFPOINT.new(200, 80, 0)
 
 --#region Variables init
 local targetPlaceholder = "None. Click Set Hotspot"
+local startTime, lastXpTime, afk = os.time(), os.time(), os.time()
+local skillName = "ARCHAEOLOGY"
+local currentXp = 0
 local MAX_IDLE_TIME_MINUTES = 5
-local startTime, afk = os.time(), os.time()
 local depositAttempt = 0
 local artifactsFound = 0
 local soilBoxFull = false
@@ -232,7 +232,7 @@ local function formatElapsedTime(start)
 end
 
 local function gameStateChecks()
-    local gameState = API.GetGameState()
+    local gameState = API.GetGameState2()
     if (gameState ~= 3) then
         API.logError('Not ingame with state: ' .. tostring(gameState))
         print('Not ingame with state: ' .. tostring(gameState))
@@ -256,7 +256,7 @@ end
 
 local DIGSITES = {
     EVERLIGHT = {
-        SOIL = { ID = 49519, VB = 9371 },
+        SOIL = { ID = 49519, VB = 9371, NAME = "Saltwater mud" },
         PRODROMOI = {
             LABEL = "Prodromoi remains",
             ID = { 116661 },
@@ -324,7 +324,7 @@ local DIGSITES = {
         }
     },
     INFERNAL = {
-        SOIL = { ID = 49521, VB = 9372 },
+        SOIL = { ID = 49521, VB = 9372, NAME = "Fiery brimstone" },
         LODGE_BAR = {
             LABEL = "Lodge bar storage",
             ID = { 116817 },
@@ -392,7 +392,7 @@ local DIGSITES = {
         }
     },
     KHARID = {
-        SOIL = { ID = 49517, VB = 9370 },
+        SOIL = { ID = 49517, VB = 9370, NAME = "Ancient gravel" },
         VENATOR = {
             LABEL = "Venator remains",
             ID = { 117101 },
@@ -470,7 +470,7 @@ local DIGSITES = {
         }
     },
     ORTHEN = {
-        SOIL = { ID = 50696, VB = 9578 },
+        SOIL = { ID = 50696, VB = 9578, NAME = "Volcanic ash" },
         VARANUSAUR = {
             LABEL = "Varanusaur remains",
             ID = { 119075 },
@@ -523,7 +523,7 @@ local DIGSITES = {
         }
     },
     SENNTISTEN = {
-        SOIL = { ID = 49517, VB = 9370 },
+        SOIL = { ID = 49517, VB = 9370, "Ancient gravel" },
         MINISTRY = {
             LABEL = "Ministry remains",
             ID = { 121157 },
@@ -556,7 +556,7 @@ local DIGSITES = {
         }
     },
     STORMGUARD = {
-        SOIL = { ID = 49523, VB = 9373 },
+        SOIL = { ID = 49523, VB = 9373, NAME = "Aerated sediment" },
         IKOVIAN = {
             LABEL = "Ikovian memorial",
             ID = { 117202 },
@@ -614,7 +614,7 @@ local DIGSITES = {
         }
     },
     WARFORGE = {
-        SOIL = { ID = 49525, VB = 9374 },
+        SOIL = { ID = 49525, VB = 9374, NAME = "Earthen clay" },
         GLADIATORIAL = {
             LABEL = "Gladiatorial goblin remains",
             ID = { 117365 },
@@ -680,7 +680,8 @@ local DIGSITES = {
 
 local IDS = {
     SOILBOX = 49538,
-    AUTOSCREENER = 50161
+    AUTOSCREENER = 50161,
+    ELVEN_SHARD = 43358
 }
 
 local function filterDigsitesByLevel(digsites, level)
@@ -751,9 +752,9 @@ local function populateDropdown()
     -- Get the IDs of the filtered and sorted items
     local items = {}
     local filteredItemIds = getFilteredItemIds(filteredHotspots)
-    local found = API.GetAllObjArrayInteract(filteredItemIds, 70, 0)
+    local found = API.GetAllObjArrayInteract(filteredItemIds, 70, {0})
 
-    local distinct = UTILS.getDistinctByProperty(found, 'Id')
+    local distinct = UTILS.getDistinctByProperty(found, "Id")
     for i = 1, #distinct, 1 do
         local item = distinct[i]
         table.insert(items, (item.Id))
@@ -779,18 +780,39 @@ local function populateDropdown()
         imguicombo.stringsArr = valueStrings
         imguicombo.int_value = 0
     else
-        API.logWarn('No hotspots found in range')
+        API.logWarn("No hotspots found in range")
     end
     -- return dropdownValues
 end
 
+local function preFlightChecks()
+    API.logWarn("selected " .. selectedTarget.SOIL.NAME)
+    local soilBar = API.GetABs_name1(selectedTarget.SOIL.NAME)
+    local soilBox = API.GetABs_name1("Archaeological soil box")
+    local autoscreener = API.InvItemFound1(IDS.AUTOSCREENER)
+
+    if soilBar == nil then
+        API.logError("Couldn't find " .. selectedTarget.SOIL.NAME .. " on the action bar")
+        return false
+    end
+    if (not autoscreener and soilBox == nil) then
+        API.logError("Couldn't find autoscreener in inventory\nand soilbox on the action bar")
+        return false
+    end
+    return true
+end
+
 local function setHotspot()
-    API.logDebug('setHotspot')
+    API.logDebug("setHotspot")
     local currentHotspot = target
     local selected = imguicombo.stringsArr[imguicombo.int_value + 1]
     selectedTarget = targets[imguicombo.int_value + 1]
     if currentHotspot ~= selected then
         target = selected
+    end
+    if not preFlightChecks() then
+        API.logError("preflight checks failed")
+        return
     end
     imguiCurrentTarget.colour = COLORS.TARGET_SET
     setTargetBtn.return_click = false
@@ -803,6 +825,21 @@ local function pauseExcavation()
     imguiCurrentTarget.colour = COLORS.PAUSED
     imguiRuntime.colour = COLORS.PAUSED
     imguiExcavate.box_name = "Excavate"
+end
+
+local function hasElvenRitualShard()
+    return API.InvItemcount_1(IDS.ELVEN_SHARD) > 0
+end
+
+local function useElvenRitualShard()
+    if not (API.InvItemcount_1(IDS.ELVEN_SHARD) > 0) then return end
+    local prayer = API.GetPrayPrecent()
+    local elvenCD = API.DeBuffbar_GetIDstatus(IDS.ELVEN_SHARD, false)
+    if prayer < 50 and not elvenCD.found then
+        API.logDebug("Using Elven Shard")
+        API.DoAction_Inventory1(IDS.ELVEN_SHARD, 43358, 1, API.OFF_ACT_GeneralInterface_route)
+        UTILS.randomSleep(600)
+    end
 end
 
 local function startExcavation()
@@ -840,10 +877,10 @@ local function artifactFoundInterfacePresent()
 end
 
 local function FindHl(objects, maxdistance, highlight)
-    local objObjs = API.GetAllObjArray1(objects, maxdistance, 0)
-    local hlObjs = API.GetAllObjArray1(highlight, maxdistance, 4)
+    local objObjs = API.GetAllObjArray1(objects, maxdistance, {0})
+    local hlObjs = API.GetAllObjArray1(highlight, maxdistance, {4})
     local shiny = {}
-    for i = 0, 2.9, 0.1 do
+    for i = 0, 1.5, 0.1 do
         for _, obj in ipairs(objObjs) do
             for _, hl in ipairs(hlObjs) do
                 if math.abs(obj.Tile_XYZ.x - hl.Tile_XYZ.x) < i and math.abs(obj.Tile_XYZ.y - hl.Tile_XYZ.y) < i then
@@ -856,40 +893,39 @@ local function FindHl(objects, maxdistance, highlight)
 end
 
 local function depositCart()
-    API.logDebug('Inventory is full after using soilbox, trying to deposit: ' .. depositAttempt)
+    API.logDebug("Inventory is full after using soilbox, trying to deposit: " .. depositAttempt)
     depositAttempt = depositAttempt + 1;
-    local cart = API.GetAllObjArrayInteract_str({ cartName }, 60, 0)
+    local cart = API.GetAllObjArrayInteract_str({ cartName }, 60, { 0 })
     if #cart > 0 then
-        API.DoAction_Object_string1(0x29, API.OFF_ACT_GeneralObject_route0, { cartName },
-            60, true);
+        API.DoAction_Object_string1(0x29, API.OFF_ACT_GeneralObject_route0, { cartName }, 60, true);
         UTILS.randomSleep(800)
         API.WaitUntilMovingEnds()
         if not API.InvFull_() then
             depositAttempt = 0
         end
     else
-        API.logWarn('Didn\'t find: "' .. cartName .. '" within 60 tiles')
+        API.logWarn("Didn't find: " .. cartName .. " within 60 tiles")
     end
 end
 
 local function destroyArtifacts()
-    API.logWarn('destroy')
     local inventory = API.ReadInvArrays33()
 
-    local items = UTILS.getDistinctByProperty(inventory, 'textitem')
+    local items = UTILS.getDistinctByProperty(inventory, "textitem")
     for i = 1, #items, 1 do
         local item = items[i]
-        if string.find(tostring(item.textitem), 'damaged') then
+        if string.find(tostring(item.textitem), "damaged") then
             local count = API.InvItemcount_1(item.itemid1)
-            API.logWarn('Destroying ' ..  item.textitem)
-            -- API.DoAction_Inventory1(item.itemid1,0,3, API.OFF_ACT_GeneralInterface_route2)
-            API.DoAction_Interface(0x24,item.itemid1,8,item.id1,item.id2,item.id3,API.OFF_ACT_GeneralInterface_route2)
-            -- API.DoAction_Interface(0x24, item.itemid1, 8, 1473, 5, i - 1, API.OFF_ACT_GeneralInterface_route2)
-            UTILS.SleepUntil(destroyInterfaceFound,5,'Destroying ' ..  item.textitem)
+            API.logWarn("Destroying " .. item.textitem)
+            API.DoAction_Interface(0x24, item.itemid1, 8, item.id1, item.id2, item.id3,
+                API.OFF_ACT_GeneralInterface_route2)
+            UTILS.SleepUntil(destroyInterfaceFound, 5, "Destroying " .. item.textitem)
             if count > 1 then
-            API.DoAction_Interface(0xffffffff,0xffffffff,0,1183,7,-1,API.OFF_ACT_GeneralInterface_Choose_option)
+                API.DoAction_Interface(0xffffffff, 0xffffffff, 0, 1183, 7, -1, API
+                .OFF_ACT_GeneralInterface_Choose_option)
             else
-                API.DoAction_Interface(0xffffffff,0xffffffff,0,1183,5,-1,API.OFF_ACT_GeneralInterface_Choose_option)
+                API.DoAction_Interface(0xffffffff, 0xffffffff, 0, 1183, 5, -1, API
+                .OFF_ACT_GeneralInterface_Choose_option)
             end
             UTILS.randomSleep(800)
         end
@@ -898,10 +934,11 @@ end
 
 local function dropSoil()
     local soilCount = API.InvItemcount_1(selectedTarget.SOIL.ID)
-    if soilCount > 0 then
-        API.logDebug('Dropping ' .. soilCount .. " soil")
+    local soilbar = API.GetABs_name1(selectedTarget.SOIL.NAME)
+    if soilbar ~= nil and soilCount > 0 then
+        API.logDebug("Dropping " .. soilCount .. " " .. selectedTarget.SOIL.NAME)
         for i = 1, soilCount, 1 do
-            API.KeyboardPress2(soilKeybind, 100, 200)
+            API.DoAction_Ability(selectedTarget.SOIL.NAME, 8, API.OFF_ACT_GeneralInterface_route2)
             UTILS.rangeSleep(50, 10, 100)
         end
     end
@@ -909,12 +946,15 @@ local function dropSoil()
 end
 
 local function bank()
-    API.logDebug('Going to bank')
+    math.randomseed(os.time())
+    API.logDebug("Going to bank")
+    depositAttempt = depositAttempt + 1
     API.DoAction_Object_string1(0x5, 80, { "Bank chest" }, 50, false)
     UTILS.randomSleep(600 * 2)
     API.WaitUntilMovingEnds()
     if API.BankOpen2() then
         API.KeyboardPress2(0x31, 100, 200)
+        depositAttempt = 0
     end
 end
 
@@ -927,25 +967,30 @@ local function fillSoilbox()
         return
     end
     if API.InvItemFound1(IDS.SOILBOX) and not soilBoxFull then
-        API.logDebug('found soilbox')
-        if API.VB_FindPSett(selectedTarget.SOIL.VB).SumOfstate == soilboxCapacity then
+        if API.VB_FindPSett(selectedTarget.SOIL.VB).SumOfstate >= soilboxCapacity then
             soilBoxFull = true
         else
             soilBoxFull = false
-            API.logDebug('Inventory is full, trying to fill soilbox')
-            API.KeyboardPress2(soilboxKeybind, 100, 200)
-            UTILS.randomSleep(600)
+            local soilCount = API.InvItemcount_1(selectedTarget.SOIL.ID)
+            if soilCount > 0 then
+                API.DoAction_Ability("Archaeological soil box", 1, API.OFF_ACT_GeneralInterface_route)
+                UTILS.countTicks(2)
+            end
         end
-    else
-        API.logDebug('no soilbox')
     end
 end
 
 local function inventoryCheck()
     if depositAttempt > 5 then
-        API.logError('Inventory still full after depositing 5 times')
-        runLoop = false
+        API.logError("Inventory still full after depositing 5 times")
         pauseExcavation()
+        terminate()
+        return false
+    end
+    if os.difftime(os.time(), lastXpTime) > 300 then
+        API.logError("Havent gained XP for a long time, exiting")
+        pauseExcavation()
+        terminate()
         return false
     end
     if API.InvFull_() then
@@ -968,7 +1013,7 @@ local function inventoryCheck()
 end
 
 local function followTimeSprite(objects)
-    local foundObjects = API.GetAllObjArray1(objects.IDS, 60, 0)
+    local foundObjects = API.GetAllObjArray1(objects.IDS, 60, {0})
     local targetIds = {}
     for i = 1, #foundObjects do
         local rock = foundObjects[i]
@@ -979,9 +1024,9 @@ local function followTimeSprite(objects)
         if sprite.Id ~= nil then
             local spritePos = WPOINT.new(sprite.TileX / 512, sprite.TileY / 512, sprite.TileZ / 512)
             local distanceF = API.Math_DistanceF(API.PlayerCoordfloat(), sprite.Tile_XYZ)
-            if distanceF > 2 then
-                UTILS.randomSleep(200)
-                if not API.CheckAnim(20) then
+            if distanceF > 1.6 then
+                UTILS.randomSleep(400)
+                if not API.CheckAnim(20) and #foundObjects > 0 then
                     API.logInfo("Excavating " .. target)
                 else
                     API.logInfo("Sprite has moved, chasing it")
@@ -999,7 +1044,7 @@ local function followTimeSprite(objects)
             UTILS.randomSleep(800)
             return
         end
-        if not API.CheckAnim(40) and not API.InvFull_() then
+        if not API.CheckAnim(40) and not API.InvFull_() and #foundObjects > 0 then
             API.logInfo("Excavating " .. target)
             API.DoAction_Object1(0x2, API.OFF_ACT_GeneralObject_route0, targetIds, 60)
             UTILS.randomSleep(800)
@@ -1032,13 +1077,13 @@ local function drawGUI()
 
     if destroyStatus ~= shouldDestroy then
         shouldDestroy = destroyStatus
-        API.logWarn('Destroying artifacts? : ' .. tostring(shouldDestroy))
+        API.logWarn("Destroying artifacts? : " .. tostring(shouldDestroy))
         imguiDestroy.tooltip_text = "Destroying: " .. tostring(shouldDestroy)
     end
 
     if bankStatus ~= shouldBank then
         shouldBank = bankStatus
-        API.logWarn('Banking artifacts? : ' .. tostring(shouldBank))
+        API.logWarn("Banking artifacts? : " .. tostring(shouldBank))
         imguiBank.tooltip_text = "Banking: " .. tostring(shouldBank)
     end
 
@@ -1063,7 +1108,7 @@ end
 --#endregion
 
 --#region Main loop
-API.logWarn('Started DeadDigger ' .. version)
+API.logWarn("Started DeadDigger " .. version)
 API.Write_LoopyLoop(true)
 populateDropdown()
 while (API.Read_LoopyLoop()) do ------------------------------------------------------
@@ -1073,11 +1118,20 @@ while (API.Read_LoopyLoop()) do ------------------------------------------------
     drawGUI()
     if runLoop and selectedTarget ~= nil then
         inventoryCheck()
+        if hasElvenRitualShard() then
+            useElvenRitualShard()
+        end
         followTimeSprite(selectedTarget)
     end
     UTILS.randomSleep(300)
+    local xp = API.GetSkillXP(skillName)
+    if (xp ~= currentXp) then
+        currentXp = xp
+        lastXpTime = os.time()
+    end
 end ----------------------------------------------------------------------------------
-API.logWarn('Stopped DeadDigger ' .. version)
+API.logWarn("Stopped DeadDigger " .. version)
+API.logWarn("Runtime " .. API.ScriptRuntimeString())
 --#endregion
 ```
 </ContentBlock>

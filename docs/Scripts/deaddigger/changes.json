@@ -1,5 +1,21 @@
 [
     {
+        "date": "2024-02-29",
+        "title": "API Update [3.2]",
+        "items": [
+            "Updated to ME v1.77"
+        ]
+    },
+    {
+        "date": "2024-02-08",
+        "title": "Enhancements [3.1]",
+        "items": [
+            "Added support for Elven Ritual Shard for people that use the Imp Souled perk. The shard should be on the action bar",
+            "You no longer have to set the keybinds for soilbox and soil",
+            "You now need to have the soil that you're excavating and the soilbox on your actionbar. It is recommended to have an ability bar setup with all the different soils and the soilbox"
+        ]
+    },
+    {
         "date": "2024-01-31",
         "title": "Major Rewrite [3.0]",
         "items": [
