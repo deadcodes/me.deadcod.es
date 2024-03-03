@@ -46,6 +46,7 @@ import changes from './changes.json';
 
 <ContentBlock title="Configuration">
 
+Set the name of the entity to deposit into `cartName` on `line 19`.
 The following three methods have to be configured by you based on the digsite.
 
 - ### Depositing
@@ -103,11 +104,11 @@ end
 # Script Name:   DeadDigger™
 # Description:  <Digger Helper>
 # Autor:        <Dead (dea.d - Discord)>
-# Version:      <3.2>
-# Datum:        <2024.02.29>
+# Version:      <3.3>
+# Datum:        <2024.03.03>
 --]]
 
-local version = "3.2"
+local version = "3.3"
 print("Run DeadDigger " .. version)
 local API = require("api")
 local UTILS = require("utils")
@@ -895,7 +896,7 @@ end
 local function depositCart()
     API.logDebug("Inventory is full after using soilbox, trying to deposit: " .. depositAttempt)
     depositAttempt = depositAttempt + 1;
-    local cart = API.GetAllObjArrayInteract_str({ cartName }, 60, { 0 })
+    local cart = API.GetAllObjArrayInteract_str({ cartName }, 60, { 12 })
     if #cart > 0 then
         API.DoAction_Object_string1(0x29, API.OFF_ACT_GeneralObject_route0, { cartName }, 60, true);
         UTILS.randomSleep(800)
@@ -967,7 +968,7 @@ local function fillSoilbox()
         return
     end
     if API.InvItemFound1(IDS.SOILBOX) and not soilBoxFull then
-        if API.VB_FindPSett(selectedTarget.SOIL.VB).SumOfstate >= soilboxCapacity then
+        if API.VB_FindPSett(selectedTarget.SOIL.VB).state >= soilboxCapacity then
             soilBoxFull = true
         else
             soilBoxFull = false

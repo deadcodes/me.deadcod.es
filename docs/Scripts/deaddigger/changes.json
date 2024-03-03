@@ -1,5 +1,12 @@
 [
     {
+        "date": "2024-03-03",
+        "title": "BugFixes [3.3]",
+        "items": [
+            "Fixed bug during interaction with Materials cart"
+        ]
+    },
+    {
         "date": "2024-02-29",
         "title": "API Update [3.2]",
         "items": [
