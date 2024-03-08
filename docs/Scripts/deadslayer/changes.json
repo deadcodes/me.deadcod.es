@@ -1,5 +1,12 @@
 [
     {
+        "date": "2024-03-08",
+        "title": "BugFix",
+        "items": [
+            "Removed target sort by distance as they are already sorted"
+        ]
+    },
+    {
         "date": "2024-02-29",
         "title": "API Update [1.2]",
         "items": [

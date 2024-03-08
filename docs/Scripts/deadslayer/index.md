@@ -466,9 +466,6 @@ local function KillMob(name)
         else
             local targets = API.GetAllObjArrayInteract_str({name}, 30, {1})
             if #targets > 0 then
-                table.sort(targets, function(k1, k2)
-                    return k1.Distance < k2.Distance
-                end)
                 local alive = filterByHealth(targets,1)
                 if API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, alive[1]) then
                     targetNotFoundCount = 0
