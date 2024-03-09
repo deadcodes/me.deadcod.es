@@ -1,5 +1,12 @@
 [
     {
+        "date": "2024-03-09",
+        "title": "BugFixes [3.4]",
+        "items": [
+            "Added missing Name attribute for SENNTISTEN Soil"
+        ]
+    },
+    {
         "date": "2024-03-03",
         "title": "BugFixes [3.3]",
         "items": [

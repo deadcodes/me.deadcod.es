@@ -104,11 +104,11 @@ end
 # Script Name:   DeadDigger™
 # Description:  <Digger Helper>
 # Autor:        <Dead (dea.d - Discord)>
-# Version:      <3.3>
-# Datum:        <2024.03.03>
+# Version:      <3.4>
+# Datum:        <2024.03.09>
 --]]
 
-local version = "3.3"
+local version = "3.4"
 print("Run DeadDigger " .. version)
 local API = require("api")
 local UTILS = require("utils")
@@ -524,7 +524,7 @@ local DIGSITES = {
         }
     },
     SENNTISTEN = {
-        SOIL = { ID = 49517, VB = 9370, "Ancient gravel" },
+        SOIL = { ID = 49517, VB = 9370, NAME = "Ancient gravel" },
         MINISTRY = {
             LABEL = "Ministry remains",
             ID = { 121157 },
