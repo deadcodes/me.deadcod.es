@@ -1,5 +1,12 @@
 [
     {
+        "date": "2024-03-11",
+        "title": "Enhancement [3.5]",
+        "items": [
+            "Now checks if you have more than 1000 charges in chargepack in preflight checks if AutoScreener is found"
+        ]
+    },
+    {
         "date": "2024-03-09",
         "title": "BugFixes [3.4]",
         "items": [

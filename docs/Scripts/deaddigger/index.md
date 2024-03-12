@@ -104,11 +104,11 @@ end
 # Script Name:   DeadDigger™
 # Description:  <Digger Helper>
 # Autor:        <Dead (dea.d - Discord)>
-# Version:      <3.4>
-# Datum:        <2024.03.09>
+# Version:      <3.5>
+# Datum:        <2024.03.11>
 --]]
 
-local version = "3.4"
+local version = "3.5"
 print("Run DeadDigger " .. version)
 local API = require("api")
 local UTILS = require("utils")
@@ -786,8 +786,12 @@ local function populateDropdown()
     -- return dropdownValues
 end
 
+local function getChargeCount()
+    return API.VB_FindPSettinOrder(5984,0).state / 3000
+end
+
 local function preFlightChecks()
-    API.logWarn("selected " .. selectedTarget.SOIL.NAME)
+    API.logWarn("selected ".. selectedTarget.SOIL.NAME)
     local soilBar = API.GetABs_name1(selectedTarget.SOIL.NAME)
     local soilBox = API.GetABs_name1("Archaeological soil box")
     local autoscreener = API.InvItemFound1(IDS.AUTOSCREENER)
@@ -799,6 +803,13 @@ local function preFlightChecks()
     if (not autoscreener and soilBox == nil) then
         API.logError("Couldn't find autoscreener in inventory\nand soilbox on the action bar")
         return false
+    end
+    if autoscreener then
+        local charges = getChargeCount()
+        if charges == nil or charges < 1000 then
+            API.logError("Found autoscreener\nNot enough energy in chargepack")
+            return false
+        end
     end
     return true
 end
