@@ -14,9 +14,8 @@ import BrowserWindow from '@site/src/components/BrowserWindow';
 <ContentBlock title="Opening Interface Debugger">
 
 You can open the interface debugger by performing the following actions on the debug menu
-- Click `ExDeb1`
-- Click `ExDeb2`
-- Click `I_Test2`
+- Click `>`
+- Click `Interfaces`
 <BrowserWindow url="Opening interface debug">
 ![Opening interface debug](open_interface.png)
  </BrowserWindow>
