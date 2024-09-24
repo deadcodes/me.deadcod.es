@@ -28,8 +28,6 @@ Get the latest release build from the MemoryError discord <u>[**tool-release**](
 ## Extraction
 :::
 
-## Extraction
-
     - Extract the archive.
     - Copy the `Lua_Scripts` folder to `%userprofile%\Documents\MemoryError\Lua_Scripts`.
 
@@ -40,8 +38,6 @@ Get the latest release build from the MemoryError discord <u>[**tool-release**](
 :::hidden
 ## DLL Injection Modes
 :::
-
-## DLL Injection Modes
 
 <Tabs>
   <TabItem value="a" label="Auto Inject">
