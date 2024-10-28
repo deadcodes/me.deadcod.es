@@ -15,14 +15,34 @@ import changes from './changes.json'
 </TopBanner>
 
 :::hidden
+## Description
+:::
+
+<ContentBlock title="Description">
+This module provides functionality for teleporting to various lodestones and checking the player's current location relative to these lodestones.
+
+Each lodestone is represented as an object with `Teleport` and `IsAtLocation` methods.
+
+`Teleport` handles the teleportation process to the respective lodestone,
+while `IsAtLocation` checks if the player is currently at the specified lodestone's location.
+</ContentBlock>
+
+:::hidden
 ## Usage
 :::
 
 <ContentBlock title="Usage">
 
+First, require this module in your script.
+
+Then, use `LODESTONES.<LODESTONE_NAME>.Teleport()` to teleport to a lodestone,
+
+or `LODESTONES.<LODESTONE_NAME>.IsAtLocation()` to check if you are at a specific lodestone.
+
 ```lua
-local LODESTONES = require("lodestones")
-LODESTONES.Lumbridge()
+    local LODESTONES = require("lodestones")
+    LODESTONES.PORT_SARIM.Teleport()
+    local atPortSarim = LODESTONES.PORT_SARIM.IsAtLocation()
 ```
 
 </ContentBlock>
@@ -43,259 +63,135 @@ LODESTONES.Lumbridge()
 <ContentBlock title="Code">
 
 ```lua showLineNumbers
-
 --[[
 #Script Name:   <lodestones.lua>
 # Description:  <Functions to teleport to Lodestones>
 # Autor:        <Dead (dea.d - Discord)>
-# Version:      <1.1>
-# Datum:        <2024.02.01>
---]]
+# Version:      <2.0>
+# Datum:        <2024.10.27>
+
+# Description:  This module provides functionality for teleporting to various lodestones and checking the player's current location relative to these lodestones.
+                Each lodestone is represented as an object with 'Teleport' and 'IsAtLocation' methods.
+                'Teleport' handles the teleportation process to the respective lodestone,
+                while 'IsAtLocation' checks if the player is currently at the specified lodestone's location.
+
+# Usage:        First, require this module in your script. 
+                Then, use LODESTONES.<LODESTONE_NAME>.Teleport() to teleport to a lodestone, 
+                or LODESTONES.<LODESTONE_NAME>.IsAtLocation() to check if you are at a specific lodestone.
+
+# Example:      local LODESTONES = require("lodestones")
+                LODESTONES.PORT_SARIM.Teleport()
+                local atPortSarim = LODESTONES.PORT_SARIM.IsAtLocation()
+]]
 
 local API = require("api")
-local UTILS = require("utils")
 local LODESTONES = {}
 
-LODESTONES.LODESTONE = {
-    AL_KHARID = {
-        id = 11,
-        loc = WPOINT.new(3297, 3184, 0)
-    },
-    ANACHRONIA = {
-        id = 25,
-        loc = WPOINT.new(5431, 2338, 0)
-    },
-    ARDOUGNE = {
-        id = 12,
-        loc = WPOINT.new(2634, 3348, 0)
-    },
-    ASHDALE = {
-        id = 34,
-        loc = WPOINT.new(2474, 2708, 2)
-    },
-    BANDIT_CAMP = {
-        id = 9,
-        loc = WPOINT.new(2899, 3544, 0)
-    },
-    BURTHOPE = {
-        id = 13,
-        loc = WPOINT.new(2899, 3544, 0)
-    },
-    CANIFIS = {
-        id = 27,
-        loc = WPOINT.new(3517, 3515, 0)
-    },
-    CATHERBY = {
-        id = 14,
-        loc = WPOINT.new(2811, 3449, 0)
-    },
-    DRAYNOR_VILLAGE = {
-        id = 15,
-        loc = WPOINT.new(3105, 3298, 0)
-    },
-    EAGLES_PEAK = {
-        id = 28,
-        loc = WPOINT.new(2366, 3479, 0)
-    },
-    EDGEVILLE = {
-        id = 16,
-        loc = WPOINT.new(3067, 3505, 0)
-    },
-    FALADOR = {
-        id = 17,
-        loc = WPOINT.new(2967, 3403, 0)
-    },
-    FORT_FORINTHRY = {
-        id = 23,
-        loc = WPOINT.new(3298, 3525, 0)
-    },
-    FREMENNIK_PROVINCE = {
-        id = 29,
-        loc = WPOINT.new(2712, 3677, 0)
-    },
-    KARAMJA = {
-        id = 30,
-        loc = WPOINT.new(2761, 3147, 0)
-    },
-    LUNAR_ISLE = {
-        id = 10,
-        loc = WPOINT.new(2085, 3914, 0)
-    },
-    LUMBRIDGE = {
-        id = 18,
-        loc = WPOINT.new(3233, 3221, 0)
-    },
-    MENAPHOS = {
-        id = 24,
-        loc = WPOINT.new(3216, 2716, 0)
-    },
-    OOGLOG = {
-        id = 31,
-        loc = WPOINT.new(2532, 2871, 0)
-    },
-    PORT_SARIM = {
-        id = 19,
-        loc = WPOINT.new(3011, 3215, 0)
-    },
-    PRIFDDINAS = {
-        id = 35,
-        loc = WPOINT.new(2208, 3360, 1)
-    },
-    SEERS_VILLAGE = {
-        id = 20,
-        loc = WPOINT.new(2689, 3482, 0)
-    },
-    TAVERLEY = {
-        id = 21,
-        loc = WPOINT.new(2878, 3442, 0)
-    },
-    TIRANNWN = {
-        id = 32,
-        loc = WPOINT.new(2254, 3149, 0)
-    },
-    UM = {
-        id = 36,
-        loc = WPOINT.new(1084, 1768, 1)
-    },
-    VARROCK = {
-        id = 22,
-        loc = WPOINT.new(3214, 3376, 0)
-    },
-    WILDERNESS = {
-        id = 33,
-        loc = WPOINT.new(0, 0, 0)
-    },
-    YANILLE = {
-        id = 26,
-        loc = WPOINT.new(2606, 3093, 0)
+
+local function IsAtLodestone(lode)
+    local playerLoc = API.PlayerCoord()
+    local lodeLoc = lode.loc
+    local xDiff = math.abs(playerLoc.x - lodeLoc.x)
+    local yDiff = math.abs(playerLoc.y - lodeLoc.y)
+
+    return xDiff <= 20 and yDiff <= 20
+end
+
+local function SleepUntil(conditionFunc, timeout, message)
+    local startTime = os.time()
+    local sleepSuccessful = false
+    while not conditionFunc() do
+        if os.difftime(os.time(), startTime) >= timeout then
+            print("Stopped waiting for " .. message .. " after " .. timeout .. " seconds.")
+            break
+        end
+        if not API.Read_LoopyLoop() then
+            print("Script exited - breaking sleep.")
+            break
+        end
+        API.RandomSleep2(100, 100, 100)
+    end
+    if conditionFunc() then
+        print("Sleep condition met for " .. message)
+        sleepSuccessful = true
+    end
+    return sleepSuccessful
+end
+
+local function OpenLodestonesInterface()
+    if API.DoAction_Interface(0xffffffff, 0xffffffff, 1, 1465, 18, -1, API.OFF_ACT_GeneralInterface_route) then
+        SleepUntil(function() return API.Compare2874Status(30, false) end, 10, "Lodestone interface open")
+    end
+end
+
+local function GoToLodestone(lode)
+    if IsAtLodestone(lode) then
+        print("At lodestone area")
+        return true
+    end
+
+    print("Teleporting to lodestone")
+    if not API.Compare2874Status(30, false) then
+        OpenLodestonesInterface()
+    end
+    -- Lodestone interface is open. We shall teleport
+    if API.DoAction_Interface(0xffffffff, 0xffffffff, 1, 1092, lode.id, -1, API.OFF_ACT_GeneralInterface_route) then
+        if API.CheckAnim(200) then
+            print("Wait for anim complete")
+            if SleepUntil(function() return IsAtLodestone(lode) end, 20, "teleported to lodestone") then
+                SleepUntil(function() return API.ReadPlayerAnim() > 0 end, 10, "first anim check")
+                SleepUntil(function() return API.ReadPlayerAnim() == 0 end, 10, "second anim check")
+                print("finished waiting for teleport")
+                API.RandomSleep2(3000,100,100)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function buildLodestone(id, loc)
+    return {
+        id = id,
+        loc = loc,
+        Teleport = function()
+            GoToLodestone({id = id, loc = loc})
+            return IsAtLodestone({id = id, loc = loc})
+        end,
+        IsAtLocation = function()
+            return IsAtLodestone({id = id, loc = loc})
+        end
     }
-}
-
-function GoToLodestone(lode)
-    print('Teleporting to ', UTILS.GetLabelFromArgument(lode, LODESTONES.LODESTONE))
-    LODESTONES.openLodestonesInterface()
-    API.DoAction_Interface(0xffffffff, 0xffffffff, 1, 1092, lode.id, -1, API.OFF_ACT_GeneralInterface_route)
-    API.RandomSleep2(3000, 2050, 5000)
-    print('sleep done')
-    UTILS.waitForAnimation(0, 20)
-    API.RandomSleep2(3000, 2050, 5000)
-    print('waitForAnimation done')
-    UTILS.waitForPlayerAtCoords(lode.loc, 0, 5)
-    print('waitForPlayerAtCoords done')
 end
 
-function LODESTONES.openLodestonesInterface()
-    API.DoAction_Interface(0xffffffff, 0xffffffff, 1, 1465, 18, -1, API.OFF_ACT_GeneralInterface_route)
-    API.RandomSleep2(500, 3050, 12000)
-end
-
-function LODESTONES.AlKharid()
-    GoToLodestone(LODESTONES.LODESTONE.AL_KHARID)
-end
-
-function LODESTONES.Anachronia()
-    GoToLodestone(LODESTONES.LODESTONE.ANACHRONIA)
-end
-
-function LODESTONES.Ardougne()
-    GoToLodestone(LODESTONES.LODESTONE.ARDOUGNE)
-end
-
-function LODESTONES.Ashdale()
-    GoToLodestone(LODESTONES.LODESTONE.ASHDALE)
-end
-
-function LODESTONES.BanditCamp()
-    GoToLodestone(LODESTONES.LODESTONE.BANDIT_CAMP)
-end
-
-function LODESTONES.Burthope()
-    GoToLodestone(LODESTONES.LODESTONE.BURTHOPE)
-end
-
-function LODESTONES.Canifis()
-    GoToLodestone(LODESTONES.LODESTONE.CANIFIS)
-end
-
-function LODESTONES.Catherby()
-    GoToLodestone(LODESTONES.LODESTONE.CATHERBY)
-end
-
-function LODESTONES.DraynorVillage()
-    GoToLodestone(LODESTONES.LODESTONE.DRAYNOR_VILLAGE)
-end
-
-function LODESTONES.Edgeville()
-    GoToLodestone(LODESTONES.LODESTONE.EDGEVILLE)
-end
-
-function LODESTONES.EaglesPeak()
-    GoToLodestone(LODESTONES.LODESTONE.EAGLES_PEAK)
-end
-
-function LODESTONES.Falador()
-    GoToLodestone(LODESTONES.LODESTONE.FALADOR)
-end
-
-function LODESTONES.FortForinthry()
-    GoToLodestone(LODESTONES.LODESTONE.FORT_FORINTHRY)
-end
-
-function LODESTONES.FremennikProvince()
-    GoToLodestone(LODESTONES.LODESTONE.FREMENNIK_PROVINCE)
-end
-
-function LODESTONES.Karamja()
-    GoToLodestone(LODESTONES.LODESTONE.KARAMJA)
-end
-
-function LODESTONES.Lumbridge()
-    GoToLodestone(LODESTONES.LODESTONE.LUMBRIDGE)
-end
-
-function LODESTONES.LunarIsle()
-    GoToLodestone(LODESTONES.LODESTONE.LUNAR_ISLE)
-end
-
-function LODESTONES.Menaphos()
-    GoToLodestone(LODESTONES.LODESTONE.MENAPHOS)
-end
-
-function LODESTONES.Ooglog()
-    GoToLodestone(LODESTONES.LODESTONE.OOGLOG)
-end
-
-function LODESTONES.Prifddinas()
-    GoToLodestone(LODESTONES.LODESTONE.PRIFDDINAS)
-end
-
-function LODESTONES.SeersVillage()
-    GoToLodestone(LODESTONES.LODESTONE.SEERS_VILLAGE)
-end
-
-function LODESTONES.Taverley()
-    GoToLodestone(LODESTONES.LODESTONE.TAVERLEY)
-end
-
-function LODESTONES.Tirannwn()
-    GoToLodestone(LODESTONES.LODESTONE.TIRANNWN)
-end
-
-function LODESTONES.Um()
-    GoToLodestone(LODESTONES.LODESTONE.UM)
-end
-
-function LODESTONES.Varrock()
-    GoToLodestone(LODESTONES.LODESTONE.VARROCK)
-end
-
-function LODESTONES.Wilderness()
-    GoToLodestone(LODESTONES.LODESTONE.WILDERNESS)
-end
-
-function LODESTONES.Yanille()
-    GoToLodestone(LODESTONES.LODESTONE.YANILLE)
-end
+LODESTONES.AL_KHARID = buildLodestone(11, WPOINT.new(3297, 3184, 0))
+LODESTONES.ANACHRONIA = buildLodestone(25, WPOINT.new(5431, 2338, 0))
+LODESTONES.ARDOUGNE = buildLodestone(12, WPOINT.new(2634, 3348, 0))
+LODESTONES.ASHDALE = buildLodestone(34, WPOINT.new(2474, 2708, 2))
+LODESTONES.BANDIT_CAMP = buildLodestone(9, WPOINT.new(2899, 3544, 0))
+LODESTONES.BURTHOPE = buildLodestone(13, WPOINT.new(2899, 3544, 0))
+LODESTONES.CANIFIS = buildLodestone(27, WPOINT.new(3517, 3515, 0))
+LODESTONES.CATHERBY = buildLodestone(14, WPOINT.new(2811, 3449, 0))
+LODESTONES.DRAYNOR_VILLAGE = buildLodestone(15, WPOINT.new(3105, 3298, 0))
+LODESTONES.EAGLES_PEAK = buildLodestone(28, WPOINT.new(2366, 3479, 0))
+LODESTONES.EDGEVILLE = buildLodestone(16, WPOINT.new(3067, 3505, 0))
+LODESTONES.FALADOR = buildLodestone(17, WPOINT.new(2967, 3403, 0))
+LODESTONES.FORT_FORINTHRY = buildLodestone(23, WPOINT.new(3298, 3525, 0))
+LODESTONES.FREMENNIK_PROVINCE = buildLodestone(29, WPOINT.new(2712, 3677, 0))
+LODESTONES.KARAMJA = buildLodestone(30, WPOINT.new(2761, 3147, 0))
+LODESTONES.LUNAR_ISLE = buildLodestone(10, WPOINT.new(2085, 3914, 0))
+LODESTONES.LUMBRIDGE = buildLodestone(18, WPOINT.new(3233, 3221, 0))
+LODESTONES.MENAPHOS = buildLodestone(24, WPOINT.new(3216, 2716, 0))
+LODESTONES.OOGLOG = buildLodestone(31, WPOINT.new(2532, 2871, 0))
+LODESTONES.PORT_SARIM = buildLodestone(19, WPOINT.new(3011, 3215, 0))
+LODESTONES.PRIFDDINAS = buildLodestone(35, WPOINT.new(2208, 3360, 1))
+LODESTONES.SEERS_VILLAGE = buildLodestone(20, WPOINT.new(2689, 3482, 0))
+LODESTONES.TAVERLEY = buildLodestone(21, WPOINT.new(2878, 3442, 0))
+LODESTONES.TIRANNWN = buildLodestone(32, WPOINT.new(2254, 3149, 0))
+LODESTONES.UM = buildLodestone(36, WPOINT.new(1084, 1768, 1))
+LODESTONES.VARROCK = buildLodestone(22, WPOINT.new(3214, 3376, 0))
+LODESTONES.WILDERNESS = buildLodestone(33, WPOINT.new(0, 0, 0))
+LODESTONES.YANILLE = buildLodestone(26, WPOINT.new(2560, 3094, 0))
 
 return LODESTONES
 ```

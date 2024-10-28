@@ -9,6 +9,7 @@
 .vs
 .history
 .cache-loader
+.vscode
 
 # Misc
 .DS_Store
